@@ -1,0 +1,6 @@
+app:
+  name: 'github.com/idoyudha/eshop-product'
+  version: '1.0.0'
+
+http:
+  port: '8080'
