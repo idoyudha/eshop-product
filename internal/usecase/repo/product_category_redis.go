@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"github.com/idoyudha/eshop-product/internal/entity"
-	"github.com/redis/go-redis/v9"
+	"github.com/idoyudha/eshop-product/pkg/redis"
 )
 
 type CategoryRedisRepo struct {
-	redis *redis.Client
+	*redis.RedisClient
 }
 
-func NewCategoryRedisRepo(redis *redis.Client) *CategoryRedisRepo {
+func NewCategoryRedisRepo(redis *redis.RedisClient) *CategoryRedisRepo {
 	return &CategoryRedisRepo{
-		redis: redis,
+		redis,
 	}
 }
 

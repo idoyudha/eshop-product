@@ -3,17 +3,17 @@ package repo
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/idoyudha/eshop-product/internal/entity"
+	"github.com/idoyudha/eshop-product/pkg/dynamodb"
 )
 
 type ProductDynamoRepo struct {
-	db *dynamodb.Client
+	*dynamodb.DynamoDB
 }
 
-func NewProductRepo(db *dynamodb.Client) *ProductDynamoRepo {
+func NewProductRepo(db *dynamodb.DynamoDB) *ProductDynamoRepo {
 	return &ProductDynamoRepo{
-		db: db,
+		db,
 	}
 }
 

@@ -3,17 +3,17 @@ package repo
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/idoyudha/eshop-product/internal/entity"
+	"github.com/idoyudha/eshop-product/pkg/dynamodb"
 )
 
 type CategoryDynamoRepo struct {
-	db *dynamodb.Client
+	*dynamodb.DynamoDB
 }
 
-func NewCategoryDynamoRepo(db *dynamodb.Client) *CategoryDynamoRepo {
+func NewCategoryDynamoRepo(db *dynamodb.DynamoDB) *CategoryDynamoRepo {
 	return &CategoryDynamoRepo{
-		db: db,
+		db,
 	}
 }
 
@@ -27,12 +27,12 @@ func (r *CategoryDynamoRepo) GetCategories(ctx context.Context) (*[]entity.Categ
 	return nil, nil
 }
 
-func (r *CategoryDynamoRepo) Delete(ctx context.Context, category *entity.Category) error {
+func (r *CategoryDynamoRepo) Update(ctx context.Context, category *entity.Category) error {
 	// TODO: implement update category
 	return nil
 }
 
-func (r *CategoryDynamoRepo) Update(ctx context.Context, id string) error {
+func (r *CategoryDynamoRepo) Delete(ctx context.Context, id string) error {
 	// TODO: implement delete category
 	return nil
 }

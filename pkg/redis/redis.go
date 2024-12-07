@@ -9,7 +9,7 @@ type RedisClient struct {
 	Client *redis.Client
 }
 
-func NewRedis(cfg *config.Redis) *RedisClient {
+func NewRedis(cfg config.Redis) *RedisClient {
 	return &RedisClient{
 		Client: redis.NewClient(RedisOptions(cfg)),
 	}

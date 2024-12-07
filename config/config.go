@@ -7,6 +7,8 @@ type (
 	Config struct {
 		App  `yaml:"app"`
 		HTTP `yaml:"http"`
+		DynamoDB
+		Redis
 	}
 
 	// App -.
