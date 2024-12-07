@@ -27,6 +27,12 @@ type (
 		AwsDynamoDBAccessKey       string `env-required:"true" env:"AWS_DYNAMO_DB_ACCESS_KEY"`
 		AwsDynamoDBSecretey        string `env-required:"true" env:"AWS_DYNAMO_DB_SECRET_KEY"`
 	}
+
+	// Redis
+	Redis struct {
+		RedisURL      string `env-required:"true" env:"REDIS_URL"`
+		RedisPassword string `env-required:"true" env:"REDIS_PASSWORD"`
+	}
 )
 
 func NewConfig() (*Config, error) {
