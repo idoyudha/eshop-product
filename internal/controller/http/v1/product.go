@@ -40,58 +40,58 @@ func (r *productRoutes) createProduct(c *gin.Context) {
 	var request CreateProductRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - createProduct")
-		c.JSON(http.StatusBadRequest, response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, newInternalServerError(err.Error()))
 		return
 	}
 
 	product, err := CreateProductRequestToProductEntity(request)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - createProduct")
-		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
 	err = r.uc.CreateProduct(c.Request.Context(), &product)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - createProduct")
-		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusCreated, "success create products")
+	c.JSON(http.StatusCreated, newCreateSuccess(product))
 }
 
 func (r *productRoutes) getProducts(c *gin.Context) {
 	products, err := r.uc.GetProducts(c.Request.Context())
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - getProducts")
-		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, products)
+	c.JSON(http.StatusOK, newGetSuccess(products))
 }
 
 func (r *productRoutes) getProductByID(c *gin.Context) {
 	product, err := r.uc.GetProductByID(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - getProductByID")
-		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, product)
+	c.JSON(http.StatusOK, newGetSuccess(product))
 }
 
 func (r *productRoutes) getProductsByCategory(c *gin.Context) {
 	products, err := r.uc.GetProductsByCategory(c.Request.Context(), c.GetInt("category_id"))
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
-		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, products)
+	c.JSON(http.StatusOK, newGetSuccess(products))
 }
 
 type UpdateProductRequest struct {
@@ -107,7 +107,7 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 	var request UpdateProductRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
-		c.JSON(http.StatusBadRequest, response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
 		return
 	}
 
@@ -115,20 +115,20 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 	err := r.uc.UpdateProduct(c.Request.Context(), &product)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
-		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, "success update product")
+	c.JSON(http.StatusOK, newUpdateSuccess(product))
 }
 
 func (r *productRoutes) deleteProduct(c *gin.Context) {
 	err := r.uc.DeleteProduct(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - deleteProduct")
-		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, "success delete product")
+	c.JSON(http.StatusOK, newDeleteSuccess())
 }
