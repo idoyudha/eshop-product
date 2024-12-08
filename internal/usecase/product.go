@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"log"
 
 	"github.com/idoyudha/eshop-product/internal/entity"
 )
@@ -25,6 +26,7 @@ func New(
 }
 
 func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Product) error {
+	log.Println("CreateProduct", product)
 	return u.productRepoDynamo.Save(ctx, product)
 }
 
