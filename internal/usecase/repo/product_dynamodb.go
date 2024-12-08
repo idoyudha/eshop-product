@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -48,8 +49,50 @@ func (r *ProductDynamoRepo) Save(ctx context.Context, product *entity.Product) e
 }
 
 func (r *ProductDynamoRepo) GetProducts(ctx context.Context) (*[]entity.Product, error) {
-	// TODO: implement scan all of products
-	return nil, nil
+	input := &dynamodb.ScanInput{
+		TableName:        aws.String(r.ProductTable),
+		FilterExpression: aws.String("attribute_not_exists(deleted_at)"),
+	}
+
+	result, err := r.Client.Scan(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan products: %w", err)
+	}
+
+	products := make([]entity.Product, 0, len(result.Items))
+	for _, item := range result.Items {
+		product := entity.Product{}
+
+		product.ID = item["id"].(*types.AttributeValueMemberS).Value
+		product.SKU = item["sku"].(*types.AttributeValueMemberS).Value
+		product.Name = item["name"].(*types.AttributeValueMemberS).Value
+
+		if imgURL, ok := item["image_url"]; ok {
+			product.ImageURL = imgURL.(*types.AttributeValueMemberS).Value
+		}
+
+		product.Description = item["description"].(*types.AttributeValueMemberS).Value
+
+		if categoryID, err := strconv.Atoi(item["category_id"].(*types.AttributeValueMemberN).Value); err == nil {
+			product.CategoryID = categoryID
+		}
+		if price, err := strconv.ParseFloat(item["price"].(*types.AttributeValueMemberN).Value, 64); err == nil {
+			product.Price = price
+		}
+		if quantity, err := strconv.Atoi(item["quantity"].(*types.AttributeValueMemberN).Value); err == nil {
+			product.Quantity = quantity
+		}
+
+		if createdAt, err := time.Parse(time.RFC3339, item["created_at"].(*types.AttributeValueMemberS).Value); err == nil {
+			product.CreatedAt = createdAt
+		}
+		if updatedAt, err := time.Parse(time.RFC3339, item["updated_at"].(*types.AttributeValueMemberS).Value); err == nil {
+			product.UpdatedAt = updatedAt
+		}
+
+		products = append(products, product)
+	}
+	return &products, nil
 }
 
 func (r *ProductDynamoRepo) GetProductByID(ctx context.Context, id string) (*entity.Product, error) {
