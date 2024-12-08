@@ -39,3 +39,12 @@ func UpdateProductRequestToProductEntity(request UpdateProductRequest, id string
 		UpdatedAt:   time.Now(),
 	}
 }
+
+func CreateCategoryRequestToCategoryEntity(request CreateCategoryRequest) (entity.Category, error) {
+	return entity.Category{
+		Name:      request.Name,
+		ParentID:  request.ParentID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}, nil
+}

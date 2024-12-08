@@ -13,15 +13,9 @@ type ProductUseCase struct {
 	categoryRepoRedis  CategoryRedisRepo
 }
 
-func New(
-	productRepoDynamo ProductDynamoRepo,
-	categoryRepoDynamo CategoryDynamoRepo,
-	categoryRepoRedis CategoryRedisRepo,
-) *ProductUseCase {
+func NewProductUseCase(productRepoDynamo ProductDynamoRepo) *ProductUseCase {
 	return &ProductUseCase{
-		productRepoDynamo:  productRepoDynamo,
-		categoryRepoDynamo: categoryRepoDynamo,
-		categoryRepoRedis:  categoryRepoRedis,
+		productRepoDynamo: productRepoDynamo,
 	}
 }
 

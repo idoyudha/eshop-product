@@ -24,9 +24,9 @@ type (
 	}
 
 	CategoryRedisRepo interface {
-		Save(context.Context, *entity.Category) error
+		Save(context.Context, *[]entity.Category) error
 		GetCategories(context.Context) (*[]entity.Category, error)
-		Update(context.Context, *entity.Category) error
+		Update(context.Context, *[]entity.Category) error
 		Delete(context.Context, string) error
 	}
 
@@ -37,5 +37,12 @@ type (
 		GetProductsByCategory(context.Context, int) ([]entity.Product, error)
 		UpdateProduct(context.Context, *entity.Product) error
 		DeleteProduct(context.Context, string, int) error
+	}
+
+	Category interface {
+		CreateCategory(context.Context, *entity.Category) error
+		GetCategories(context.Context) (*[]entity.Category, error)
+		UpdateCategory(context.Context, *entity.Category) error
+		DeleteCategory(context.Context, string) error
 	}
 )

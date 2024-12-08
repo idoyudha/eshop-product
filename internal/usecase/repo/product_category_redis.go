@@ -17,7 +17,7 @@ func NewCategoryRedisRepo(redis *redis.RedisClient) *CategoryRedisRepo {
 	}
 }
 
-func (r *CategoryRedisRepo) Save(ctx context.Context, category *entity.Category) error {
+func (r *CategoryRedisRepo) Save(ctx context.Context, category *[]entity.Category) error {
 	// TODO: implement save category
 	return nil
 }
@@ -27,7 +27,7 @@ func (r *CategoryRedisRepo) GetCategories(ctx context.Context) (*[]entity.Catego
 	return nil, nil
 }
 
-func (r *CategoryRedisRepo) Update(ctx context.Context, category *entity.Category) error {
+func (r *CategoryRedisRepo) Update(ctx context.Context, category *[]entity.Category) error {
 	// TODO: implement update category
 	return nil
 }

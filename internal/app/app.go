@@ -25,15 +25,18 @@ func Run(cfg *config.Config) {
 
 	redisClient := redis.NewRedis(cfg.Redis)
 
-	productUsecase := usecase.New(
+	productUseCase := usecase.NewProductUseCase(
 		repo.NewProductRepo(dynamoDB),
-		repo.NewCategoryDynamoRepo(dynamoDB),
+	)
+
+	categoryUseCase := usecase.NewCategoryUseCase(
 		repo.NewCategoryRedisRepo(redisClient),
+		repo.NewCategoryDynamoRepo(dynamoDB),
 	)
 
 	// HTTP Server
 	handler := gin.Default()
-	v1.NewRouter(handler, productUsecase, l)
+	v1.NewRouter(handler, productUseCase, categoryUseCase, l)
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)

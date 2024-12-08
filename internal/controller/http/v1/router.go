@@ -8,7 +8,12 @@ import (
 	"github.com/idoyudha/eshop-product/pkg/logger"
 )
 
-func NewRouter(handler *gin.Engine, uc usecase.Product, l logger.Interface) {
+func NewRouter(
+	handler *gin.Engine,
+	ucp usecase.Product,
+	ucg usecase.Category,
+	l logger.Interface,
+) {
 	// options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
@@ -20,6 +25,7 @@ func NewRouter(handler *gin.Engine, uc usecase.Product, l logger.Interface) {
 
 	h := handler.Group("/v1")
 	{
-		newProductRoutes(h, uc, l)
+		newProductRoutes(h, ucp, l)
+		newCategoryRoutes(h, ucg, l)
 	}
 }
