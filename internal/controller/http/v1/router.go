@@ -7,7 +7,7 @@ import (
 	"github.com/idoyudha/eshop-product/internal/usecase"
 )
 
-func NewRouter(handler *gin.Engine, uc usecase.ProductUseCase) {
+func NewRouter(handler *gin.Engine, uc usecase.Product) {
 	// options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())

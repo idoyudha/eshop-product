@@ -30,7 +30,7 @@ type (
 		Delete(context.Context, string) error
 	}
 
-	ProductUsecase interface {
+	Product interface {
 		CreateProduct(context.Context, *entity.Product) error
 		GetProducts(context.Context) (*[]entity.Product, error)
 		GetProductByID(context.Context, string) (*entity.Product, error)

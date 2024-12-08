@@ -10,10 +10,10 @@ import (
 )
 
 type productRoutes struct {
-	uc usecase.ProductUseCase
+	uc usecase.Product
 }
 
-func newProductRoutes(handler *gin.RouterGroup, uc usecase.ProductUseCase) {
+func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product) {
 	r := &productRoutes{uc: uc}
 
 	h := handler.Group("/products")
