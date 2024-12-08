@@ -9,6 +9,7 @@ type (
 		HTTP `yaml:"http"`
 		DynamoDB
 		Redis
+		Log `yaml:"log"`
 	}
 
 	// App -.
@@ -34,6 +35,11 @@ type (
 	Redis struct {
 		RedisURL      string `env-required:"true" env:"REDIS_URL"`
 		RedisPassword string `env-required:"true" env:"REDIS_PASSWORD"`
+	}
+
+	// Log
+	Log struct {
+		Level string `yaml:"log_level"`
 	}
 )
 

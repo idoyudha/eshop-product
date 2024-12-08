@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,13 +12,15 @@ import (
 	"github.com/idoyudha/eshop-product/internal/usecase/repo"
 	"github.com/idoyudha/eshop-product/pkg/dynamodb"
 	"github.com/idoyudha/eshop-product/pkg/httpserver"
+	"github.com/idoyudha/eshop-product/pkg/logger"
 	"github.com/idoyudha/eshop-product/pkg/redis"
 )
 
 func Run(cfg *config.Config) {
+	l := logger.New(cfg.Log.Level)
 	dynamoDB, err := dynamodb.NewDynamoDB(&cfg.DynamoDB)
 	if err != nil {
-		panic(err)
+		l.Fatal("app - Run - dynamodb.NewDynamoDB: ", err)
 	}
 
 	redisClient := redis.NewRedis(cfg.Redis)
@@ -32,7 +33,7 @@ func Run(cfg *config.Config) {
 
 	// HTTP Server
 	handler := gin.Default()
-	v1.NewRouter(handler, productUsecase)
+	v1.NewRouter(handler, productUsecase, l)
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
@@ -40,14 +41,14 @@ func Run(cfg *config.Config) {
 
 	select {
 	case s := <-interrupt:
-		log.Println("app - Run - signal: ", s.String())
+		l.Info("app - Run - signal: %s", s.String())
 	case err = <-httpServer.Notify():
-		log.Println("app - Run - httpServer.Notify: ", err)
+		l.Error("app - Run - httpServer.Notify: ", err)
 	}
 
 	// Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
-		log.Println("app - Run - httpServer.Shutdown: ", err)
+		l.Info("app - Run - httpServer.Shutdown: %s", err)
 	}
 }

@@ -5,9 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/idoyudha/eshop-product/internal/usecase"
+	"github.com/idoyudha/eshop-product/pkg/logger"
 )
 
-func NewRouter(handler *gin.Engine, uc usecase.Product) {
+func NewRouter(handler *gin.Engine, uc usecase.Product, l logger.Interface) {
 	// options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
@@ -19,6 +20,6 @@ func NewRouter(handler *gin.Engine, uc usecase.Product) {
 
 	h := handler.Group("/v1")
 	{
-		newProductRoutes(h, uc)
+		newProductRoutes(h, uc, l)
 	}
 }

@@ -2,19 +2,19 @@ package v1
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/idoyudha/eshop-product/internal/helpers/mapper"
 	"github.com/idoyudha/eshop-product/internal/usecase"
+	"github.com/idoyudha/eshop-product/pkg/logger"
 )
 
 type productRoutes struct {
 	uc usecase.Product
+	l  logger.Interface
 }
 
-func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product) {
-	r := &productRoutes{uc: uc}
+func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product, l logger.Interface) {
+	r := &productRoutes{uc: uc, l: l}
 
 	h := handler.Group("/products")
 	{
@@ -27,12 +27,33 @@ func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product) {
 	}
 }
 
+type CreateProductRequest struct {
+	Name        string  `json:"name" binding:"required"`
+	ImageURL    string  `json:"image_url" binding:"required"`
+	Description string  `json:"description" binding:"required"`
+	Price       float64 `json:"price" binding:"required"`
+	Quantity    int     `json:"quantity" binding:"required"`
+	CategoryID  int     `json:"category_id" binding:"required"`
+}
+
 func (r *productRoutes) createProduct(c *gin.Context) {
-	product := mapper.ProductRequestCtxToProductEntity(c)
-	product.CreatedAt = time.Now()
-	product.UpdatedAt = time.Now()
-	err := r.uc.CreateProduct(c.Request.Context(), product)
+	var request CreateProductRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - createProduct")
+		c.JSON(http.StatusBadRequest, response{Error: err.Error()})
+		return
+	}
+
+	product, err := CreateProductRequestToProductEntity(request)
 	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - createProduct")
+		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
+		return
+	}
+
+	err = r.uc.CreateProduct(c.Request.Context(), &product)
+	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - createProduct")
 		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
 		return
 	}
@@ -43,6 +64,7 @@ func (r *productRoutes) createProduct(c *gin.Context) {
 func (r *productRoutes) getProducts(c *gin.Context) {
 	products, err := r.uc.GetProducts(c.Request.Context())
 	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - getProducts")
 		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
 		return
 	}
@@ -53,6 +75,7 @@ func (r *productRoutes) getProducts(c *gin.Context) {
 func (r *productRoutes) getProductByID(c *gin.Context) {
 	product, err := r.uc.GetProductByID(c.Request.Context(), c.Param("id"))
 	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - getProductByID")
 		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
 		return
 	}
@@ -63,6 +86,7 @@ func (r *productRoutes) getProductByID(c *gin.Context) {
 func (r *productRoutes) getProductsByCategory(c *gin.Context) {
 	products, err := r.uc.GetProductsByCategory(c.Request.Context(), c.GetInt("category_id"))
 	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
 		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
 		return
 	}
@@ -70,11 +94,27 @@ func (r *productRoutes) getProductsByCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, products)
 }
 
+type UpdateProductRequest struct {
+	Name        string  `json:"name" binding:"required"`
+	ImageURL    string  `json:"image_url" binding:"required"`
+	Description string  `json:"description" binding:"required"`
+	Price       float64 `json:"price" binding:"required"`
+	Quantity    int     `json:"quantity" binding:"required"`
+	CategoryID  int     `json:"category_id" binding:"required"`
+}
+
 func (r *productRoutes) updateProduct(c *gin.Context) {
-	product := mapper.ProductRequestCtxToProductEntity(c)
-	product.UpdatedAt = time.Now()
-	err := r.uc.UpdateProduct(c.Request.Context(), product)
+	var request UpdateProductRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
+		c.JSON(http.StatusBadRequest, response{Error: err.Error()})
+		return
+	}
+
+	product := UpdateProductRequestToProductEntity(request)
+	err := r.uc.UpdateProduct(c.Request.Context(), &product)
 	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
 		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
 		return
 	}
@@ -85,6 +125,7 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 func (r *productRoutes) deleteProduct(c *gin.Context) {
 	err := r.uc.DeleteProduct(c.Request.Context(), c.Param("id"))
 	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - deleteProduct")
 		c.JSON(http.StatusInternalServerError, response{Error: err.Error()})
 		return
 	}
