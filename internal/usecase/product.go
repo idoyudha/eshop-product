@@ -46,6 +46,6 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 	return u.productRepoDynamo.Update(ctx, product)
 }
 
-func (u *ProductUseCase) DeleteProduct(ctx context.Context, id string) error {
-	return u.productRepoDynamo.Delete(ctx, id)
+func (u *ProductUseCase) DeleteProduct(ctx context.Context, productID string, categoryID int) error {
+	return u.productRepoDynamo.Delete(ctx, productID, categoryID)
 }

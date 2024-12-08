@@ -27,8 +27,9 @@ func CreateProductRequestToProductEntity(request CreateProductRequest) (entity.P
 	}, nil
 }
 
-func UpdateProductRequestToProductEntity(request UpdateProductRequest) entity.Product {
+func UpdateProductRequestToProductEntity(request UpdateProductRequest, id string) entity.Product {
 	return entity.Product{
+		ID:          id,
 		Name:        request.Name,
 		ImageURL:    request.ImageURL,
 		Description: request.Description,

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/idoyudha/eshop-product/internal/usecase"
@@ -23,7 +24,7 @@ func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product, l logger.Int
 		h.GET("/:id", r.getProductByID)
 		h.GET("/category/:id", r.getProductsByCategory)
 		h.PUT("/:id", r.updateProduct)
-		h.DELETE("/:id", r.deleteProduct)
+		h.DELETE("/:product_id/category/:category_id", r.deleteProduct)
 	}
 }
 
@@ -84,7 +85,13 @@ func (r *productRoutes) getProductByID(c *gin.Context) {
 }
 
 func (r *productRoutes) getProductsByCategory(c *gin.Context) {
-	products, err := r.uc.GetProductsByCategory(c.Request.Context(), c.GetInt("category_id"))
+	categoryID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
+		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
+		return
+	}
+	products, err := r.uc.GetProductsByCategory(c.Request.Context(), categoryID)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
@@ -111,7 +118,8 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 		return
 	}
 
-	product := UpdateProductRequestToProductEntity(request)
+	product := UpdateProductRequestToProductEntity(request, c.Param("id"))
+
 	err := r.uc.UpdateProduct(c.Request.Context(), &product)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
@@ -123,7 +131,13 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 }
 
 func (r *productRoutes) deleteProduct(c *gin.Context) {
-	err := r.uc.DeleteProduct(c.Request.Context(), c.Param("id"))
+	categoryID, err := strconv.Atoi(c.Param("category_id"))
+	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - deleteProduct")
+		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
+		return
+	}
+	err = r.uc.DeleteProduct(c.Request.Context(), c.Param("product_id"), categoryID)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - deleteProduct")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))

@@ -13,7 +13,7 @@ type (
 		GetProductByID(context.Context, string) (*entity.Product, error)
 		GetProductsByCategory(context.Context, int) ([]entity.Product, error)
 		Update(context.Context, *entity.Product) error
-		Delete(context.Context, string) error
+		Delete(context.Context, string, int) error
 	}
 
 	CategoryDynamoRepo interface {
@@ -36,6 +36,6 @@ type (
 		GetProductByID(context.Context, string) (*entity.Product, error)
 		GetProductsByCategory(context.Context, int) ([]entity.Product, error)
 		UpdateProduct(context.Context, *entity.Product) error
-		DeleteProduct(context.Context, string) error
+		DeleteProduct(context.Context, string, int) error
 	}
 )
