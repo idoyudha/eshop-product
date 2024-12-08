@@ -227,7 +227,7 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 			":quantity":    &types.AttributeValueMemberN{Value: strconv.Itoa(product.Quantity)},
 			":updated_at":  &types.AttributeValueMemberS{Value: product.UpdatedAt.Format(time.RFC3339)},
 		},
-		ConditionExpression: aws.String("attribute_exists(id) AND attribute_not_exists(deleted_at)"),
+		ConditionExpression: aws.String("attribute_not_exists(deleted_at)"),
 	}
 
 	_, err := r.Client.UpdateItem(ctx, input)
