@@ -24,8 +24,12 @@ func NewCategoryUseCase(
 func (u *CategoryUseCase) GetCategories(ctx context.Context) (*[]entity.Category, error) {
 	// get from redis first
 	categories, err := u.categoryRepoRedis.GetCategories(ctx)
-	if err == nil {
-		return nil, nil
+	if err != nil {
+		return nil, err
+	}
+
+	if len(*categories) > 0 {
+		return categories, nil
 	}
 
 	// if not found, get from dynamo
@@ -46,7 +50,7 @@ func (u *CategoryUseCase) CreateCategory(ctx context.Context, category *entity.C
 	// create new in dynamodb
 	err := u.categoryRepoDynamo.Save(ctx, category)
 	if err != nil {
-
+		return err
 	}
 
 	// get all in dynamodb
@@ -100,9 +104,17 @@ func (u *CategoryUseCase) DeleteCategory(ctx context.Context, id string) error {
 	}
 
 	// set new in redis, replace the last one
-	err = u.categoryRepoRedis.Save(ctx, categories)
-	if err != nil {
-		return err
+	if len(*categories) == 0 {
+		// delete the value in redis
+		err = u.categoryRepoRedis.Delete(ctx)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = u.categoryRepoRedis.Save(ctx, categories)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

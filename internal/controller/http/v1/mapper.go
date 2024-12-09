@@ -41,7 +41,12 @@ func UpdateProductRequestToProductEntity(request UpdateProductRequest, id string
 }
 
 func CreateCategoryRequestToCategoryEntity(request CreateCategoryRequest) (entity.Category, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return entity.Category{}, err
+	}
 	return entity.Category{
+		ID:        id.String(),
 		Name:      request.Name,
 		ParentID:  request.ParentID,
 		CreatedAt: time.Now(),

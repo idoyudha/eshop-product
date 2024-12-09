@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/idoyudha/eshop-product/internal/entity"
 	"github.com/idoyudha/eshop-product/internal/usecase"
 	"github.com/idoyudha/eshop-product/pkg/logger"
 )
@@ -26,8 +27,8 @@ func newCategoryRoutes(handler *gin.RouterGroup, uc usecase.Category, l logger.I
 }
 
 type CreateCategoryRequest struct {
-	Name     string `json:"name"`
-	ParentID *int   `json:"parent_id"`
+	Name     string  `json:"name"`
+	ParentID *string `json:"parent_id"`
 }
 
 func (r *categoryRoutes) createCategory(c *gin.Context) {
@@ -74,14 +75,11 @@ func (r *categoryRoutes) updateCategory(c *gin.Context) {
 		return
 	}
 
-	category, err := CreateCategoryRequestToCategoryEntity(request)
-	if err != nil {
-		r.l.Error(err, "http - v1 - categoryRoutes - updateCategory")
-		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
-		return
-	}
+	var category entity.Category
+	category.Name = request.Name
+	category.ParentID = request.ParentID
 
-	err = r.uc.UpdateCategory(c.Request.Context(), &category)
+	err := r.uc.UpdateCategory(c.Request.Context(), &category)
 	if err != nil {
 		r.l.Error(err, "http - v1 - categoryRoutes - updateCategory")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))

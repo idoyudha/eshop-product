@@ -26,8 +26,7 @@ type (
 	CategoryRedisRepo interface {
 		Save(context.Context, *[]entity.Category) error
 		GetCategories(context.Context) (*[]entity.Category, error)
-		Update(context.Context, *[]entity.Category) error
-		Delete(context.Context, string) error
+		Delete(context.Context) error
 	}
 
 	Product interface {

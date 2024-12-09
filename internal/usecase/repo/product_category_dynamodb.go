@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -28,9 +27,9 @@ func (r *CategoryDynamoRepo) Save(ctx context.Context, category *entity.Category
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String(r.CategoryTable),
 		Item: map[string]types.AttributeValue{
-			"id":         &types.AttributeValueMemberN{Value: strconv.Itoa(category.ID)},
+			"id":         &types.AttributeValueMemberS{Value: category.ID},
 			"name":       &types.AttributeValueMemberS{Value: category.Name},
-			"parent_id":  &types.AttributeValueMemberN{Value: strconv.Itoa(*category.ParentID)},
+			"parent_id":  &types.AttributeValueMemberS{Value: *category.ParentID},
 			"created_at": &types.AttributeValueMemberS{Value: category.CreatedAt.String()},
 			"updated_at": &types.AttributeValueMemberS{Value: category.UpdatedAt.String()},
 		},
@@ -58,13 +57,9 @@ func (r *CategoryDynamoRepo) GetCategories(ctx context.Context) (*[]entity.Categ
 	for _, item := range result.Items {
 		category := entity.Category{}
 
-		if id, err := strconv.Atoi(item["id"].(*types.AttributeValueMemberN).Value); err == nil {
-			category.ID = id
-		}
+		category.ID = item["id"].(*types.AttributeValueMemberS).Value
 		category.Name = item["name"].(*types.AttributeValueMemberS).Value
-		if parentID, err := strconv.Atoi(item["parent_id"].(*types.AttributeValueMemberN).Value); err == nil {
-			category.ParentID = &parentID
-		}
+		category.ParentID = &item["parent_id"].(*types.AttributeValueMemberS).Value
 		if createdAt, err := time.Parse(time.RFC3339, item["created_at"].(*types.AttributeValueMemberS).Value); err == nil {
 			category.CreatedAt = createdAt
 		}
@@ -82,7 +77,7 @@ func (r *CategoryDynamoRepo) Update(ctx context.Context, category *entity.Catego
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String(r.CategoryTable),
 		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberN{Value: strconv.Itoa(category.ID)},
+			"id": &types.AttributeValueMemberS{Value: category.ID},
 		},
 		UpdateExpression: aws.String(
 			"SET #name = :name, " +
@@ -91,7 +86,7 @@ func (r *CategoryDynamoRepo) Update(ctx context.Context, category *entity.Catego
 		),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":name":       &types.AttributeValueMemberS{Value: category.Name},
-			":parent_id":  &types.AttributeValueMemberN{Value: strconv.Itoa(*category.ParentID)},
+			":parent_id":  &types.AttributeValueMemberS{Value: *category.ParentID},
 			":updated_at": &types.AttributeValueMemberS{Value: category.UpdatedAt.Format(time.RFC3339)},
 		},
 		ConditionExpression: aws.String("attribute_not_exists(deleted_at)"),
@@ -101,7 +96,7 @@ func (r *CategoryDynamoRepo) Update(ctx context.Context, category *entity.Catego
 	if err != nil {
 		var ccf *types.ConditionalCheckFailedException
 		if ok := errors.As(err, &ccf); ok {
-			return fmt.Errorf("category not found or has been deleted, id: %d", category.ID)
+			return fmt.Errorf("category not found or has been deleted, id: %s", category.ID)
 		}
 		return fmt.Errorf("failed to category product: %w", err)
 	}
@@ -112,7 +107,7 @@ func (r *CategoryDynamoRepo) Delete(ctx context.Context, id string) error {
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String(r.CategoryTable),
 		Key: map[string]types.AttributeValue{
-			"id": &types.AttributeValueMemberN{Value: id},
+			"id": &types.AttributeValueMemberS{Value: id},
 		},
 		UpdateExpression: aws.String("SET deleted_at = :deleted_at"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
