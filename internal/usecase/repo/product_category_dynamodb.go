@@ -84,6 +84,9 @@ func (r *CategoryDynamoRepo) Update(ctx context.Context, category *entity.Catego
 				"parent_id = :parent_id, " +
 				"updated_at = :updated_at",
 		),
+		ExpressionAttributeNames: map[string]string{
+			"#name": "name",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":name":       &types.AttributeValueMemberS{Value: category.Name},
 			":parent_id":  &types.AttributeValueMemberS{Value: *category.ParentID},

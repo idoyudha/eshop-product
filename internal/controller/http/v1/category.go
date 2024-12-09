@@ -75,9 +75,11 @@ func (r *categoryRoutes) updateCategory(c *gin.Context) {
 		return
 	}
 
-	var category entity.Category
-	category.Name = request.Name
-	category.ParentID = request.ParentID
+	category := entity.Category{
+		ID:       c.Param("id"),
+		Name:     request.Name,
+		ParentID: request.ParentID,
+	}
 
 	err := r.uc.UpdateCategory(c.Request.Context(), &category)
 	if err != nil {
