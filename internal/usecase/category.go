@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/idoyudha/eshop-product/internal/entity"
+	"github.com/redis/go-redis/v9"
 )
 
 type CategoryUseCase struct {
@@ -23,8 +24,8 @@ func NewCategoryUseCase(
 
 func (u *CategoryUseCase) GetCategories(ctx context.Context) (*[]entity.Category, error) {
 	// get from redis first
-	categories, err := u.categoryRepoRedis.GetCategories(ctx)
-	if err != nil {
+	categories, err := u.categoryRepoRedis.GetAll(ctx)
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
@@ -39,7 +40,7 @@ func (u *CategoryUseCase) GetCategories(ctx context.Context) (*[]entity.Category
 	}
 
 	// set to redis
-	err = u.categoryRepoRedis.Save(ctx, categories)
+	err = u.categoryRepoRedis.SaveAll(ctx, categories)
 	if err != nil {
 		return nil, err
 	}
@@ -53,14 +54,8 @@ func (u *CategoryUseCase) CreateCategory(ctx context.Context, category *entity.C
 		return err
 	}
 
-	// get all in dynamodb
-	categories, err := u.categoryRepoDynamo.GetCategories(ctx)
-	if err != nil {
-		return err
-	}
-
-	// set new in redis, replace the last one
-	err = u.categoryRepoRedis.Save(ctx, categories)
+	// set new in redis
+	err = u.categoryRepoRedis.Add(ctx, category)
 	if err != nil {
 		return err
 	}
@@ -75,14 +70,8 @@ func (u *CategoryUseCase) UpdateCategory(ctx context.Context, category *entity.C
 		return err
 	}
 
-	// get all in dynamodb
-	categories, err := u.categoryRepoDynamo.GetCategories(ctx)
-	if err != nil {
-		return err
-	}
-
-	// set new in redis, replace the last one
-	err = u.categoryRepoRedis.Save(ctx, categories)
+	// update in redis
+	err = u.categoryRepoRedis.UpdateName(ctx, category.ID, category.Name)
 	if err != nil {
 		return err
 	}
@@ -97,24 +86,9 @@ func (u *CategoryUseCase) DeleteCategory(ctx context.Context, id string) error {
 		return err
 	}
 
-	// get all in dynamodb
-	categories, err := u.categoryRepoDynamo.GetCategories(ctx)
+	err = u.categoryRepoRedis.Delete(ctx, id)
 	if err != nil {
 		return err
-	}
-
-	// set new in redis, replace the last one
-	if len(*categories) == 0 {
-		// delete the value in redis
-		err = u.categoryRepoRedis.Delete(ctx)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = u.categoryRepoRedis.Save(ctx, categories)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
