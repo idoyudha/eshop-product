@@ -29,7 +29,7 @@ func (u *CategoryUseCase) GetCategories(ctx context.Context) (*[]entity.Category
 		return nil, err
 	}
 
-	if len(*categories) > 0 {
+	if categories != nil {
 		return categories, nil
 	}
 
