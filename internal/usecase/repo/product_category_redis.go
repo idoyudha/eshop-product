@@ -162,7 +162,7 @@ func (r *CategoryRedisRepo) Add(ctx context.Context, category *entity.Category) 
 	return nil
 }
 
-func (r *CategoryRedisRepo) UpdateName(ctx context.Context, id string, newName string) error {
+func (r *CategoryRedisRepo) Update(ctx context.Context, id string, newName string) error {
 	categoryKey := categoryKeyPrefix + id
 
 	pipe := r.Client.Pipeline()

@@ -71,7 +71,7 @@ func (u *CategoryUseCase) UpdateCategory(ctx context.Context, category *entity.C
 	}
 
 	// update in redis
-	err = u.categoryRepoRedis.UpdateName(ctx, category.ID, category.Name)
+	err = u.categoryRepoRedis.Update(ctx, category.ID, category.Name)
 	if err != nil {
 		return err
 	}

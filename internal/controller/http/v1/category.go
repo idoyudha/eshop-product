@@ -27,8 +27,8 @@ func newCategoryRoutes(handler *gin.RouterGroup, uc usecase.Category, l logger.I
 }
 
 type CreateCategoryRequest struct {
-	Name     string  `json:"name"`
-	ParentID *string `json:"parent_id"`
+	Name     string  `json:"name" binding:"required"`
+	ParentID *string `json:"parent_id" binding:"required"`
 }
 
 func (r *categoryRoutes) createCategory(c *gin.Context) {
@@ -67,8 +67,12 @@ func (r *categoryRoutes) getCategories(c *gin.Context) {
 	c.JSON(http.StatusOK, newGetSuccess(categories))
 }
 
+type UpdateCategoryRequest struct {
+	Name string `json:"name" binding:"required"`
+}
+
 func (r *categoryRoutes) updateCategory(c *gin.Context) {
-	var request CreateCategoryRequest
+	var request UpdateCategoryRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		r.l.Error(err, "http - v1 - categoryRoutes - updateCategory")
 		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))

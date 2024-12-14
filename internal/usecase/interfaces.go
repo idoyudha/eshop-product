@@ -28,7 +28,7 @@ type (
 		GetAll(context.Context) (*[]entity.Category, error)
 		GetByParentID(context.Context, string) ([]entity.Category, error)
 		Add(context.Context, *entity.Category) error
-		UpdateName(context.Context, string, string) error
+		Update(context.Context, string, string) error
 		Delete(context.Context, string) error
 	}
 

@@ -81,7 +81,6 @@ func (r *CategoryDynamoRepo) Update(ctx context.Context, category *entity.Catego
 		},
 		UpdateExpression: aws.String(
 			"SET #name = :name, " +
-				"parent_id = :parent_id, " +
 				"updated_at = :updated_at",
 		),
 		ExpressionAttributeNames: map[string]string{
@@ -89,7 +88,6 @@ func (r *CategoryDynamoRepo) Update(ctx context.Context, category *entity.Catego
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":name":       &types.AttributeValueMemberS{Value: category.Name},
-			":parent_id":  &types.AttributeValueMemberS{Value: *category.ParentID},
 			":updated_at": &types.AttributeValueMemberS{Value: category.UpdatedAt.Format(time.RFC3339)},
 		},
 		ConditionExpression: aws.String("attribute_not_exists(deleted_at)"),
