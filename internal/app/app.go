@@ -29,7 +29,7 @@ func Run(cfg *config.Config) {
 	kafkaConsumer, err := kafka.NewKafkaConsumer(
 		cfg.Kafka.Broker,
 		"product-service",
-		[]string{"product_amount_updated"},
+		[]string{"product-quantity-updated"},
 		l,
 	)
 	if err != nil {

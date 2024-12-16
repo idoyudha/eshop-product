@@ -9,7 +9,7 @@ import (
 	"github.com/idoyudha/eshop-product/pkg/kafka"
 )
 
-const ProductUpdatedTopic = "product_updated"
+const ProductUpdatedTopic = "product-updated"
 
 type ProductUseCase struct {
 	productRepoDynamo ProductDynamoRepo
