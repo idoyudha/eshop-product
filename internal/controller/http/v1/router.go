@@ -8,7 +8,7 @@ import (
 	"github.com/idoyudha/eshop-product/pkg/logger"
 )
 
-func NewRouter(
+func HTTPNewRouter(
 	handler *gin.Engine,
 	ucp usecase.Product,
 	ucg usecase.Category,

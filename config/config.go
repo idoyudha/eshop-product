@@ -10,6 +10,7 @@ type (
 		DynamoDB
 		Redis
 		Log `yaml:"log"`
+		Kafka
 	}
 
 	// App -.
@@ -40,6 +41,11 @@ type (
 	// Log
 	Log struct {
 		Level string `yaml:"log_level"`
+	}
+
+	// Kafka
+	Kafka struct {
+		Broker string `env-required:"true" env:"KAFKA_BROKER"`
 	}
 )
 

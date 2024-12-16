@@ -7,17 +7,36 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/idoyudha/eshop-product/config"
-	v1 "github.com/idoyudha/eshop-product/internal/controller/http/v1"
+	v1Http "github.com/idoyudha/eshop-product/internal/controller/http/v1"
 	"github.com/idoyudha/eshop-product/internal/usecase"
 	"github.com/idoyudha/eshop-product/internal/usecase/repo"
 	"github.com/idoyudha/eshop-product/pkg/dynamodb"
 	"github.com/idoyudha/eshop-product/pkg/httpserver"
+	"github.com/idoyudha/eshop-product/pkg/kafka"
 	"github.com/idoyudha/eshop-product/pkg/logger"
 	"github.com/idoyudha/eshop-product/pkg/redis"
 )
 
 func Run(cfg *config.Config) {
 	l := logger.New(cfg.Log.Level)
+
+	kafkaProducer, err := kafka.NewKafkaProducer(cfg.Kafka.Broker, l)
+	if err != nil {
+		l.Fatal("app - Run - kafka.NewKafkaProducer: ", err)
+	}
+	defer kafkaProducer.Close()
+
+	kafkaConsumer, err := kafka.NewKafkaConsumer(
+		cfg.Kafka.Broker,
+		"product-service",
+		[]string{"product_amount_updated"},
+		l,
+	)
+	if err != nil {
+		l.Fatal("app - Run - kafka.NewKafkaConsumer: ", err)
+	}
+	defer kafkaConsumer.Close()
+
 	dynamoDB, err := dynamodb.NewDynamoDB(&cfg.DynamoDB)
 	if err != nil {
 		l.Fatal("app - Run - dynamodb.NewDynamoDB: ", err)
@@ -30,6 +49,7 @@ func Run(cfg *config.Config) {
 
 	productUseCase := usecase.NewProductUseCase(
 		repo.NewProductRepo(dynamoDB),
+		kafkaProducer,
 	)
 
 	categoryUseCase := usecase.NewCategoryUseCase(
@@ -39,7 +59,7 @@ func Run(cfg *config.Config) {
 
 	// HTTP Server
 	handler := gin.Default()
-	v1.NewRouter(handler, productUseCase, categoryUseCase, l)
+	v1Http.HTTPNewRouter(handler, productUseCase, categoryUseCase, l)
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
