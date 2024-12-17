@@ -15,8 +15,8 @@ func HTTPNewRouter(
 	l logger.Interface,
 ) {
 	// options
-	handler.Use(gin.Logger())
-	handler.Use(gin.Recovery())
+	// handler.Use(gin.Logger())
+	// handler.Use(gin.Recovery())
 
 	// health check
 	handler.GET("/health", func(c *gin.Context) {
