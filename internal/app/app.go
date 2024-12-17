@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/idoyudha/eshop-product/config"
 	v1Http "github.com/idoyudha/eshop-product/internal/controller/http/v1"
+	v1Kafka "github.com/idoyudha/eshop-product/internal/controller/kafka/v1"
 	"github.com/idoyudha/eshop-product/internal/usecase"
 	"github.com/idoyudha/eshop-product/internal/usecase/repo"
 	"github.com/idoyudha/eshop-product/pkg/dynamodb"
@@ -20,18 +21,13 @@ import (
 func Run(cfg *config.Config) {
 	l := logger.New(cfg.Log.Level)
 
-	kafkaProducer, err := kafka.NewKafkaProducer(cfg.Kafka.Broker, l)
+	kafkaProducer, err := kafka.NewKafkaProducer(cfg.Kafka.Broker)
 	if err != nil {
 		l.Fatal("app - Run - kafka.NewKafkaProducer: ", err)
 	}
 	defer kafkaProducer.Close()
 
-	kafkaConsumer, err := kafka.NewKafkaConsumer(
-		cfg.Kafka.Broker,
-		"product-service",
-		[]string{"product-quantity-updated"},
-		l,
-	)
+	kafkaConsumer, err := kafka.NewKafkaConsumer(cfg.Kafka.Broker)
 	if err != nil {
 		l.Fatal("app - Run - kafka.NewKafkaConsumer: ", err)
 	}
@@ -56,6 +52,9 @@ func Run(cfg *config.Config) {
 		repo.NewCategoryRedisRepo(redisClient),
 		repo.NewCategoryDynamoRepo(dynamoDB),
 	)
+
+	// Kafka Consumer
+	v1Kafka.KafkaNewRouter(productUseCase, l, kafkaConsumer)
 
 	// HTTP Server
 	handler := gin.Default()
