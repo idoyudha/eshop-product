@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,15 +27,16 @@ func KafkaNewRouter(
 	for run {
 		select {
 		case sig := <-sigchan:
-			fmt.Printf("Caught signal %v: terminating\n", sig)
+			log.Printf("Caught signal %v: terminating\n", sig)
 			run = false
 		default:
 			ev, err := c.Consumer.ReadMessage(100 * time.Millisecond)
 			if err != nil {
+				// log.Println("CONSUME PRODUCT SERVICE!!")
 				// Errors are informational and automatically handled by the consumer
 				continue
 			}
-			fmt.Printf("Consumed event from topic %s: key = %-10s value = %s\n",
+			log.Printf("Consumed event from topic %s: key = %-10s value = %s\n",
 				*ev.TopicPartition.Topic, string(ev.Key), string(ev.Value))
 		}
 	}
