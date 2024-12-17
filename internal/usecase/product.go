@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/idoyudha/eshop-product/internal/entity"
 	"github.com/idoyudha/eshop-product/pkg/kafka"
 )
@@ -40,9 +41,9 @@ func (u *ProductUseCase) GetProductsByCategory(ctx context.Context, categoryID i
 }
 
 type KafkaProductUpdatedMessage struct {
-	ProductID    string  `json:"product_id"`
-	ProductName  string  `json:"product_name"`
-	ProductPrice float64 `json:"product_price"`
+	ProductID    uuid.UUID `json:"product_id"`
+	ProductName  string    `json:"product_name"`
+	ProductPrice float64   `json:"product_price"`
 }
 
 func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Product) error {
@@ -52,7 +53,7 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 	}
 
 	message := KafkaProductUpdatedMessage{
-		ProductID:    product.ID,
+		ProductID:    uuid.MustParse(product.ID),
 		ProductName:  product.Name,
 		ProductPrice: product.Price,
 	}
