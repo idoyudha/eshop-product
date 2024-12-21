@@ -24,8 +24,17 @@ func NewProductUseCase(productRepoDynamo ProductDynamoRepo, producer *kafka.Prod
 	}
 }
 
-func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Product) error {
-	return u.productRepoDynamo.Save(ctx, product)
+func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Product) (*entity.Product, error) {
+	err := product.GenerateProductID()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create product: %w", err)
+	}
+	product.GenerateSKU()
+	err = u.productRepoDynamo.Save(ctx, product)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create product: %w", err)
+	}
+	return product, nil
 }
 
 func (u *ProductUseCase) GetProducts(ctx context.Context) (*[]entity.Product, error) {
@@ -40,7 +49,7 @@ func (u *ProductUseCase) GetProductsByCategory(ctx context.Context, categoryID i
 	return u.productRepoDynamo.GetProductsByCategory(ctx, categoryID)
 }
 
-type KafkaProductUpdatedMessage struct {
+type kafkaProductUpdatedMessage struct {
 	ProductID    uuid.UUID `json:"product_id"`
 	ProductName  string    `json:"product_name"`
 	ProductPrice float64   `json:"product_price"`
@@ -52,7 +61,7 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 		return fmt.Errorf("failed to update product: %w", err)
 	}
 
-	message := KafkaProductUpdatedMessage{
+	message := kafkaProductUpdatedMessage{
 		ProductID:    uuid.MustParse(product.ID),
 		ProductName:  product.Name,
 		ProductPrice: product.Price,

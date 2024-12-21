@@ -1,12 +1,26 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Category struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	ParentID  *string    `json:"parent_id,omitempty"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	ID        string
+	Name      string
+	ParentID  *string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func (p *Category) GenerateCategoryID() error {
+	categoryID, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+
+	p.ID = categoryID.String()
+	return nil
 }

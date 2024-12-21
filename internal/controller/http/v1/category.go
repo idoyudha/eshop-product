@@ -26,34 +26,43 @@ func newCategoryRoutes(handler *gin.RouterGroup, uc usecase.Category, l logger.I
 	}
 }
 
-type CreateCategoryRequest struct {
+type createCategoryRequest struct {
 	Name     string  `json:"name" binding:"required"`
 	ParentID *string `json:"parent_id" binding:"required"`
 }
 
+type createCategoryResponse struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	ParentID *string `json:"parent_id"`
+}
+
 func (r *categoryRoutes) createCategory(c *gin.Context) {
-	var request CreateCategoryRequest
+	var request createCategoryRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		r.l.Error(err, "http - v1 - categoryRoutes - createCategory")
 		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
 		return
 	}
 
-	category, err := CreateCategoryRequestToCategoryEntity(request)
+	categoryEntity := createCategoryRequestToCategoryEntity(request)
+
+	category, err := r.uc.CreateCategory(c.Request.Context(), &categoryEntity)
 	if err != nil {
 		r.l.Error(err, "http - v1 - categoryRoutes - createCategory")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
-	err = r.uc.CreateCategory(c.Request.Context(), &category)
-	if err != nil {
-		r.l.Error(err, "http - v1 - categoryRoutes - createCategory")
-		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
-		return
-	}
+	categoryResponse := categoryEntityToCreateCategoryResponse(*category)
 
-	c.JSON(http.StatusCreated, newCreateSuccess(category))
+	c.JSON(http.StatusCreated, newCreateSuccess(categoryResponse))
+}
+
+type getCategoryResponse struct {
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	ParentID *string `json:"parent_id"`
 }
 
 func (r *categoryRoutes) getCategories(c *gin.Context) {
@@ -64,15 +73,22 @@ func (r *categoryRoutes) getCategories(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, newGetSuccess(categories))
+	categoriesResponse := categoryEntitiesToGetCategoryResponse(*categories)
+
+	c.JSON(http.StatusOK, newGetSuccess(categoriesResponse))
 }
 
-type UpdateCategoryRequest struct {
+type updateCategoryRequest struct {
 	Name string `json:"name" binding:"required"`
 }
 
+type updateCategoryResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func (r *categoryRoutes) updateCategory(c *gin.Context) {
-	var request UpdateCategoryRequest
+	var request updateCategoryRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		r.l.Error(err, "http - v1 - categoryRoutes - updateCategory")
 		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
@@ -91,7 +107,9 @@ func (r *categoryRoutes) updateCategory(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, newUpdateSuccess(category))
+	categoryResponse := categoryEntityToUpdateCategoryResponse(category)
+
+	c.JSON(http.StatusOK, newUpdateSuccess(categoryResponse))
 }
 
 func (r *categoryRoutes) deleteCategory(c *gin.Context) {

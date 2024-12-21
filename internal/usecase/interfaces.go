@@ -33,7 +33,7 @@ type (
 	}
 
 	Product interface {
-		CreateProduct(context.Context, *entity.Product) error
+		CreateProduct(context.Context, *entity.Product) (*entity.Product, error)
 		GetProducts(context.Context) (*[]entity.Product, error)
 		GetProductByID(context.Context, string) (*entity.Product, error)
 		GetProductsByCategory(context.Context, int) ([]entity.Product, error)
@@ -42,7 +42,7 @@ type (
 	}
 
 	Category interface {
-		CreateCategory(context.Context, *entity.Category) error
+		CreateCategory(context.Context, *entity.Category) (*entity.Category, error)
 		GetCategories(context.Context) (*[]entity.Category, error)
 		UpdateCategory(context.Context, *entity.Category) error
 		DeleteCategory(context.Context, string) error

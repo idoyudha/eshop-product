@@ -1,17 +1,36 @@
 package entity
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/idoyudha/eshop-product/internal/utils"
+)
 
 type Product struct {
-	ID          string     `json:"id"`
-	SKU         string     `json:"sku"`
-	Name        string     `json:"name"`
-	ImageURL    string     `json:"image_url"`
-	Description string     `json:"description"`
-	Price       float64    `json:"price"`
-	Quantity    int        `json:"quantity"`
-	CategoryID  int        `json:"category_id"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
+	ID          string
+	SKU         string
+	Name        string
+	ImageURL    string
+	Description string
+	Price       float64
+	Quantity    int
+	CategoryID  int
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   *time.Time
+}
+
+func (p *Product) GenerateProductID() error {
+	productId, err := uuid.NewV7()
+	if err != nil {
+		return err
+	}
+
+	p.ID = productId.String()
+	return nil
+}
+
+func (p *Product) GenerateSKU() {
+	p.SKU = utils.GenerateSKU()
 }

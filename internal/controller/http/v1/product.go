@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"mime/multipart"
 	"net/http"
 	"strconv"
 
@@ -28,31 +29,37 @@ func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product, l logger.Int
 	}
 }
 
-type CreateProductRequest struct {
-	Name        string  `json:"name" binding:"required"`
-	ImageURL    string  `json:"image_url" binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	Price       float64 `json:"price" binding:"required"`
-	Quantity    int     `json:"quantity" binding:"required"`
-	CategoryID  int     `json:"category_id" binding:"required"`
+type createProductRequest struct {
+	Name        string                `form:"name" binding:"required"`
+	Image       *multipart.FileHeader `form:"image" binding:"required"`
+	Description string                `form:"description" binding:"required"`
+	Price       float64               `form:"price" binding:"required"`
+	Quantity    int                   `form:"quantity" binding:"required"`
+	CategoryID  int                   `form:"category_id" binding:"required"`
+}
+
+type createProductResponse struct {
+	ID          string  `json:"id"`
+	SKU         string  `json:"sku"`
+	Name        string  `json:"name"`
+	ImageURL    string  `json:"image_url"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	Quantity    int     `json:"quantity"`
+	CategoryID  int     `json:"category_id"`
 }
 
 func (r *productRoutes) createProduct(c *gin.Context) {
-	var request CreateProductRequest
+	var request createProductRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - createProduct")
 		c.JSON(http.StatusBadRequest, newInternalServerError(err.Error()))
 		return
 	}
 
-	product, err := CreateProductRequestToProductEntity(request)
-	if err != nil {
-		r.l.Error(err, "http - v1 - productRoutes - createProduct")
-		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
-		return
-	}
+	productEntity := createProductRequestToProductEntity(request)
 
-	err = r.uc.CreateProduct(c.Request.Context(), &product)
+	product, err := r.uc.CreateProduct(c.Request.Context(), &productEntity)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - createProduct")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
@@ -60,6 +67,17 @@ func (r *productRoutes) createProduct(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, newCreateSuccess(product))
+}
+
+type getProductResponse struct {
+	ID          string  `json:"id"`
+	SKU         string  `json:"sku"`
+	Name        string  `json:"name"`
+	ImageURL    string  `json:"image_url"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	Quantity    int     `json:"quantity"`
+	CategoryID  int     `json:"category_id"`
 }
 
 func (r *productRoutes) getProducts(c *gin.Context) {
@@ -70,7 +88,9 @@ func (r *productRoutes) getProducts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, newGetSuccess(products))
+	productsResponse := productEntitiesToGetProductResponse(*products)
+
+	c.JSON(http.StatusOK, newGetSuccess(productsResponse))
 }
 
 func (r *productRoutes) getProductByID(c *gin.Context) {
@@ -81,7 +101,9 @@ func (r *productRoutes) getProductByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, newGetSuccess(product))
+	productsResponse := productEntityToGetProductResponse(*product)
+
+	c.JSON(http.StatusOK, newGetSuccess(productsResponse))
 }
 
 func (r *productRoutes) getProductsByCategory(c *gin.Context) {
@@ -91,17 +113,20 @@ func (r *productRoutes) getProductsByCategory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
 		return
 	}
-	products, err := r.uc.GetProductsByCategory(c.Request.Context(), categoryID)
+
+	productEntities, err := r.uc.GetProductsByCategory(c.Request.Context(), categoryID)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
 
+	products := productEntitiesToGetProductResponse(productEntities)
+
 	c.JSON(http.StatusOK, newGetSuccess(products))
 }
 
-type UpdateProductRequest struct {
+type updateProductRequest struct {
 	Name        string  `json:"name" binding:"required"`
 	ImageURL    string  `json:"image_url" binding:"required"`
 	Description string  `json:"description" binding:"required"`
@@ -110,22 +135,34 @@ type UpdateProductRequest struct {
 	CategoryID  int     `json:"category_id" binding:"required"`
 }
 
+type updateProductResponse struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	ImageURL    string  `json:"image_url"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	Quantity    int     `json:"quantity"`
+	CategoryID  int     `json:"category_id"`
+}
+
 func (r *productRoutes) updateProduct(c *gin.Context) {
-	var request UpdateProductRequest
+	var request updateProductRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
 		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
 		return
 	}
 
-	product := UpdateProductRequestToProductEntity(request, c.Param("id"))
+	productEntity := updateProductRequestToProductEntity(request, c.Param("id"))
 
-	err := r.uc.UpdateProduct(c.Request.Context(), &product)
+	err := r.uc.UpdateProduct(c.Request.Context(), &productEntity)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}
+
+	product := productEntityToUpdateProductResponse(productEntity)
 
 	c.JSON(http.StatusOK, newUpdateSuccess(product))
 }

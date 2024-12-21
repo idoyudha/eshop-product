@@ -47,20 +47,25 @@ func (u *CategoryUseCase) GetCategories(ctx context.Context) (*[]entity.Category
 	return categories, nil
 }
 
-func (u *CategoryUseCase) CreateCategory(ctx context.Context, category *entity.Category) error {
-	// create new in dynamodb
-	err := u.categoryRepoDynamo.Save(ctx, category)
+func (u *CategoryUseCase) CreateCategory(ctx context.Context, category *entity.Category) (*entity.Category, error) {
+	err := category.GenerateCategoryID()
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	// create new in dynamodb
+	err = u.categoryRepoDynamo.Save(ctx, category)
+	if err != nil {
+		return nil, err
 	}
 
 	// set new in redis
 	err = u.categoryRepoRedis.Add(ctx, category)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return category, nil
 }
 
 func (u *CategoryUseCase) UpdateCategory(ctx context.Context, category *entity.Category) error {
