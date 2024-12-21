@@ -7,9 +7,9 @@ type (
 	Config struct {
 		App  `yaml:"app"`
 		HTTP `yaml:"http"`
-		DynamoDB
+		Log  `yaml:"log"`
+		AWS
 		Redis
-		Log `yaml:"log"`
 		Kafka
 	}
 
@@ -24,12 +24,10 @@ type (
 		Port string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
 	}
 
-	// AWS DynamoDB
-	DynamoDB struct {
-		AwsRegion                  string `env-required:"true" env:"AWS_REGION"`
-		AwsDynamoDBServiceEndpoint string `env-required:"true" env:"AWS_DYNAMO_DB_SERVICE_ENDPOINT"`
-		AwsDynamoDBAccessKey       string `env-required:"true" env:"AWS_DYNAMO_DB_ACCESS_KEY"`
-		AwsDynamoDBSecretey        string `env-required:"true" env:"AWS_DYNAMO_DB_SECRET_KEY"`
+	AWS struct {
+		AwsRegion    string `env-required:"true" env:"AWS_REGION"`
+		AwsAccessKey string `env-required:"true" env:"AWS_ACCESS_KEY"`
+		AwsSecretey  string `env-required:"true" env:"AWS_SECRET_KEY"`
 	}
 
 	// Redis

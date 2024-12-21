@@ -33,7 +33,7 @@ func Run(cfg *config.Config) {
 	}
 	defer kafkaConsumer.Close()
 
-	dynamoDB, err := dynamodb.NewDynamoDB(&cfg.DynamoDB)
+	dynamoDB, err := dynamodb.NewDynamoDB(&cfg.AWS)
 	if err != nil {
 		l.Fatal("app - Run - dynamodb.NewDynamoDB: ", err)
 	}

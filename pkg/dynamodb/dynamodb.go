@@ -21,7 +21,7 @@ type DynamoDB struct {
 	CategoryTable string
 }
 
-func NewDynamoDB(cfg *config.DynamoDB) (*DynamoDB, error) {
+func NewDynamoDB(cfg *config.AWS) (*DynamoDB, error) {
 	dynamoDB := &DynamoDB{
 		ProductTable:  _productTableName,
 		CategoryTable: _categoryTableName,
@@ -36,13 +36,13 @@ func NewDynamoDB(cfg *config.DynamoDB) (*DynamoDB, error) {
 	return dynamoDB, nil
 }
 
-func dynamoDBClient(cfg *config.DynamoDB) (*dynamodb.Client, error) {
+func dynamoDBClient(cfgAWS *config.AWS) (*dynamodb.Client, error) {
 	awsCfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
-		awsConfig.WithRegion(cfg.AwsRegion),
+		awsConfig.WithRegion(cfgAWS.AwsRegion),
 		awsConfig.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
-				AccessKeyID:     cfg.AwsDynamoDBAccessKey,
-				SecretAccessKey: cfg.AwsDynamoDBSecretey,
+				AccessKeyID:     cfgAWS.AwsAccessKey,
+				SecretAccessKey: cfgAWS.AwsSecretey,
 			},
 		}),
 	)
