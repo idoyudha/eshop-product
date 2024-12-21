@@ -11,7 +11,7 @@ import (
 	v1Kafka "github.com/idoyudha/eshop-product/internal/controller/kafka/v1"
 	"github.com/idoyudha/eshop-product/internal/usecase"
 	"github.com/idoyudha/eshop-product/internal/usecase/repo"
-	"github.com/idoyudha/eshop-product/pkg/dynamodb"
+	"github.com/idoyudha/eshop-product/pkg/aws"
 	"github.com/idoyudha/eshop-product/pkg/httpserver"
 	"github.com/idoyudha/eshop-product/pkg/kafka"
 	"github.com/idoyudha/eshop-product/pkg/logger"
@@ -33,7 +33,7 @@ func Run(cfg *config.Config) {
 	}
 	defer kafkaConsumer.Close()
 
-	dynamoDB, err := dynamodb.NewDynamoDB(&cfg.AWS)
+	dynamoDB, err := aws.NewDynamoDB(&cfg.AWS)
 	if err != nil {
 		l.Fatal("app - Run - dynamodb.NewDynamoDB: ", err)
 	}

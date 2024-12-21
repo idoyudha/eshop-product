@@ -25,9 +25,11 @@ type (
 	}
 
 	AWS struct {
-		AwsRegion    string `env-required:"true" env:"AWS_REGION"`
-		AwsAccessKey string `env-required:"true" env:"AWS_ACCESS_KEY"`
-		AwsSecretey  string `env-required:"true" env:"AWS_SECRET_KEY"`
+		AwsRegion     string `env-required:"true" env:"AWS_REGION"`
+		AwsAccessKey  string `env-required:"true" env:"AWS_ACCESS_KEY"`
+		AwsSecretey   string `env-required:"true" env:"AWS_SECRET_KEY"`
+		ProductBucket string `env-required:"true" env:"AWS_PRODUCT_BUCKET"`
+		CdnDomain     string `env-required:"true" env:"AWS_CDN_DOMAIN"`
 	}
 
 	// Redis

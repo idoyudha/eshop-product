@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/idoyudha/eshop-product/internal/entity"
-	d "github.com/idoyudha/eshop-product/pkg/dynamodb"
+	d "github.com/idoyudha/eshop-product/pkg/aws"
 )
 
 type ProductDynamoRepo struct {
