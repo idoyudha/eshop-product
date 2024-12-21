@@ -35,7 +35,6 @@ func updateProductRequestToProductEntity(request updateProductRequest, id string
 	return entity.Product{
 		ID:          id,
 		Name:        request.Name,
-		ImageURL:    request.ImageURL,
 		Description: request.Description,
 		Price:       request.Price,
 		Quantity:    request.Quantity,

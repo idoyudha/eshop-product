@@ -127,12 +127,12 @@ func (r *productRoutes) getProductsByCategory(c *gin.Context) {
 }
 
 type updateProductRequest struct {
-	Name        string  `json:"name" binding:"required"`
-	ImageURL    string  `json:"image_url" binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	Price       float64 `json:"price" binding:"required"`
-	Quantity    int     `json:"quantity" binding:"required"`
-	CategoryID  int     `json:"category_id" binding:"required"`
+	Name        string                `form:"name" binding:"required"`
+	Image       *multipart.FileHeader `form:"image" binding:"required"`
+	Description string                `form:"description" binding:"required"`
+	Price       float64               `form:"price" binding:"required"`
+	Quantity    int                   `form:"quantity" binding:"required"`
+	CategoryID  int                   `form:"category_id" binding:"required"`
 }
 
 type updateProductResponse struct {
