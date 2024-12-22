@@ -34,3 +34,7 @@ func (p *Product) GenerateProductID() error {
 func (p *Product) GenerateSKU() {
 	p.SKU = utils.GenerateSKU()
 }
+
+func (p *Product) SetImageURL(imageURL string) {
+	p.ImageURL = imageURL
+}

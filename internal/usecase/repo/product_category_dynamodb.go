@@ -10,16 +10,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/idoyudha/eshop-product/internal/entity"
-	d "github.com/idoyudha/eshop-product/pkg/aws"
+	awsService "github.com/idoyudha/eshop-product/pkg/aws"
 )
 
 type CategoryDynamoRepo struct {
-	*d.DynamoDB
+	*awsService.DynamoDB
 }
 
-func NewCategoryDynamoRepo(db *d.DynamoDB) *CategoryDynamoRepo {
+func NewCategoryDynamoRepo(d *awsService.DynamoDB) *CategoryDynamoRepo {
 	return &CategoryDynamoRepo{
-		db,
+		d,
 	}
 }
 

@@ -59,7 +59,7 @@ func (r *productRoutes) createProduct(c *gin.Context) {
 
 	productEntity := createProductRequestToProductEntity(request)
 
-	product, err := r.uc.CreateProduct(c.Request.Context(), &productEntity)
+	product, err := r.uc.CreateProduct(c.Request.Context(), &productEntity, request.Image)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - createProduct")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))

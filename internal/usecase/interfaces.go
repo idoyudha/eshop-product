@@ -2,11 +2,16 @@ package usecase
 
 import (
 	"context"
+	"mime/multipart"
 
 	"github.com/idoyudha/eshop-product/internal/entity"
 )
 
 type (
+	ProductS3Repo interface {
+		UploadImage(context.Context, *multipart.FileHeader) (string, error)
+	}
+
 	ProductDynamoRepo interface {
 		Save(context.Context, *entity.Product) error
 		GetProducts(context.Context) (*[]entity.Product, error)
@@ -33,7 +38,7 @@ type (
 	}
 
 	Product interface {
-		CreateProduct(context.Context, *entity.Product) (*entity.Product, error)
+		CreateProduct(context.Context, *entity.Product, *multipart.FileHeader) (*entity.Product, error)
 		GetProducts(context.Context) (*[]entity.Product, error)
 		GetProductByID(context.Context, string) (*entity.Product, error)
 		GetProductsByCategory(context.Context, int) ([]entity.Product, error)

@@ -33,6 +33,11 @@ func Run(cfg *config.Config) {
 	}
 	defer kafkaConsumer.Close()
 
+	s3, err := aws.NewS3(&cfg.AWS)
+	if err != nil {
+		l.Fatal("app - Run - aws.NewS3: ", err)
+	}
+
 	dynamoDB, err := aws.NewDynamoDB(&cfg.AWS)
 	if err != nil {
 		l.Fatal("app - Run - dynamodb.NewDynamoDB: ", err)
@@ -44,7 +49,8 @@ func Run(cfg *config.Config) {
 	}
 
 	productUseCase := usecase.NewProductUseCase(
-		repo.NewProductRepo(dynamoDB),
+		repo.NewProductS3Repo(s3),
+		repo.NewProductDynamoDBRepo(dynamoDB),
 		kafkaProducer,
 	)
 

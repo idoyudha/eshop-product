@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 
 	"github.com/google/uuid"
 	"github.com/idoyudha/eshop-product/internal/entity"
@@ -13,23 +14,38 @@ import (
 const ProductUpdatedTopic = "product-updated"
 
 type ProductUseCase struct {
+	productRepoImage  ProductS3Repo
 	productRepoDynamo ProductDynamoRepo
 	producer          *kafka.ProducerServer
 }
 
-func NewProductUseCase(productRepoDynamo ProductDynamoRepo, producer *kafka.ProducerServer) *ProductUseCase {
+func NewProductUseCase(
+	productRepoImage ProductS3Repo,
+	productRepoDynamo ProductDynamoRepo,
+	producer *kafka.ProducerServer,
+) *ProductUseCase {
 	return &ProductUseCase{
+		productRepoImage:  productRepoImage,
 		productRepoDynamo: productRepoDynamo,
 		producer:          producer,
 	}
 }
 
-func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Product) (*entity.Product, error) {
+func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Product, imageFile *multipart.FileHeader) (*entity.Product, error) {
 	err := product.GenerateProductID()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
 	product.GenerateSKU()
+
+	// save image to s3
+	imageURL, err := u.productRepoImage.UploadImage(ctx, imageFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create product: %w", err)
+	}
+	product.SetImageURL(imageURL)
+
+	// save product to dynamo
 	err = u.productRepoDynamo.Save(ctx, product)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
