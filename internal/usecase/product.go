@@ -101,9 +101,12 @@ func (u *ProductUseCase) GetProductsByCategory(ctx context.Context, categoryID s
 }
 
 type kafkaProductUpdatedMessage struct {
-	ProductID    uuid.UUID `json:"product_id"`
-	ProductName  string    `json:"product_name"`
-	ProductPrice float64   `json:"product_price"`
+	ProductID          uuid.UUID `json:"product_id"`
+	ProductName        string    `json:"product_name"`
+	ProductImageURL    string    `json:"product_image_url"`
+	ProductDescription string    `json:"product_description"`
+	ProductPrice       float64   `json:"product_price"`
+	ProductCategoryID  uuid.UUID `json:"product_category_id"`
 }
 
 func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Product) error {
@@ -113,9 +116,12 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 	}
 
 	message := kafkaProductUpdatedMessage{
-		ProductID:    uuid.MustParse(product.ID),
-		ProductName:  product.Name,
-		ProductPrice: product.Price,
+		ProductID:          uuid.MustParse(product.ID),
+		ProductName:        product.Name,
+		ProductImageURL:    product.ImageURL,
+		ProductDescription: product.Description,
+		ProductPrice:       product.Price,
+		ProductCategoryID:  uuid.MustParse(product.CategoryID),
 	}
 
 	err = u.producer.Produce(
