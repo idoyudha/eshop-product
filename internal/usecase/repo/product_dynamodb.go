@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -198,33 +199,52 @@ func (r *ProductDynamoRepo) GetProductsByCategory(ctx context.Context, categoryI
 	return products, nil
 }
 
+// TODO: error get when this function not update the sku and created_at
 func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product) error {
+	// build dynamic update expression
+	var updateParts []string
+	expAttrNames := map[string]string{
+		"#name": "name",
+	}
+	expAttrValues := map[string]types.AttributeValue{}
+
+	// Only include fields that should be updated
+	if product.Name != "" {
+		updateParts = append(updateParts, "#name = :name")
+		expAttrValues[":name"] = &types.AttributeValueMemberS{Value: product.Name}
+	}
+	if product.ImageURL != "" {
+		updateParts = append(updateParts, "image_url = :image_url")
+		expAttrValues[":image_url"] = &types.AttributeValueMemberS{Value: product.ImageURL}
+	}
+	if product.Description != "" {
+		updateParts = append(updateParts, "description = :description")
+		expAttrValues[":description"] = &types.AttributeValueMemberS{Value: product.Description}
+	}
+	if product.Price > 0 {
+		updateParts = append(updateParts, "price = :price")
+		expAttrValues[":price"] = &types.AttributeValueMemberN{Value: strconv.FormatFloat(product.Price, 'f', 2, 64)}
+	}
+	if product.Quantity >= 0 {
+		updateParts = append(updateParts, "quantity = :quantity")
+		expAttrValues[":quantity"] = &types.AttributeValueMemberN{Value: strconv.Itoa(product.Quantity)}
+	}
+
+	updateParts = append(updateParts, "updated_at = :updated_at")
+	expAttrValues[":updated_at"] = &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339)}
+
+	updateExpression := "SET " + strings.Join(updateParts, ", ")
+
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String(r.ProductTable),
 		Key: map[string]types.AttributeValue{
 			"id":          &types.AttributeValueMemberS{Value: product.ID},
 			"category_id": &types.AttributeValueMemberS{Value: product.CategoryID},
 		},
-		UpdateExpression: aws.String(
-			"SET #name = :name, " +
-				"image_url = :image_url, " +
-				"description = :description, " +
-				"price = :price, " +
-				"quantity = :quantity, " +
-				"updated_at = :updated_at",
-		),
-		ExpressionAttributeNames: map[string]string{
-			"#name": "name", // name is reserved word in dynamodb
-		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":name":        &types.AttributeValueMemberS{Value: product.Name},
-			":image_url":   &types.AttributeValueMemberS{Value: product.ImageURL},
-			":description": &types.AttributeValueMemberS{Value: product.Description},
-			":price":       &types.AttributeValueMemberN{Value: strconv.FormatFloat(product.Price, 'f', 2, 64)},
-			":quantity":    &types.AttributeValueMemberN{Value: strconv.Itoa(product.Quantity)},
-			":updated_at":  &types.AttributeValueMemberS{Value: product.UpdatedAt.Format(time.RFC3339)},
-		},
-		ConditionExpression: aws.String("attribute_not_exists(deleted_at)"),
+		UpdateExpression:          aws.String(updateExpression),
+		ExpressionAttributeNames:  expAttrNames,
+		ExpressionAttributeValues: expAttrValues,
+		ConditionExpression:       aws.String("attribute_not_exists(deleted_at)"),
 	}
 
 	_, err := r.Client.UpdateItem(ctx, input)
@@ -239,12 +259,12 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 	return nil
 }
 
-func (r *ProductDynamoRepo) Delete(ctx context.Context, productID string, categoryID int) error {
+func (r *ProductDynamoRepo) Delete(ctx context.Context, productID string, categoryID string) error {
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String(r.ProductTable),
 		Key: map[string]types.AttributeValue{
 			"id":          &types.AttributeValueMemberS{Value: productID},
-			"category_id": &types.AttributeValueMemberN{Value: strconv.Itoa(categoryID)},
+			"category_id": &types.AttributeValueMemberS{Value: categoryID},
 		},
 		UpdateExpression: aws.String("SET deleted_at = :deleted_at"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

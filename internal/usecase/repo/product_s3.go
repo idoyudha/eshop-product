@@ -42,7 +42,7 @@ func (r *ProductS3Repo) UploadImage(ctx context.Context, file *multipart.FileHea
 		return "", fmt.Errorf("failed to upload file: %w", err)
 	}
 
-	imageURL := fmt.Sprintf("https://%s/%s", r.CDNDomain, filename)
+	imageURL := fmt.Sprintf("%s/%s", r.CDNDomain, filename)
 
 	return imageURL, nil
 }

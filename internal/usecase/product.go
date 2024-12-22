@@ -109,8 +109,14 @@ type kafkaProductUpdatedMessage struct {
 	ProductCategoryID  uuid.UUID `json:"product_category_id"`
 }
 
-func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Product) error {
-	err := u.productRepoDynamo.Update(ctx, product)
+func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Product, imageFile *multipart.FileHeader) error {
+	imageURL, err := u.productRepoImage.UploadImage(ctx, imageFile)
+	if err != nil {
+		return fmt.Errorf("failed to update product: %w", err)
+	}
+	product.SetImageURL(imageURL)
+
+	err = u.productRepoDynamo.Update(ctx, product)
 	if err != nil {
 		return fmt.Errorf("failed to update product: %w", err)
 	}
@@ -137,6 +143,6 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 	return nil
 }
 
-func (u *ProductUseCase) DeleteProduct(ctx context.Context, productID string, categoryID int) error {
+func (u *ProductUseCase) DeleteProduct(ctx context.Context, productID string, categoryID string) error {
 	return u.productRepoDynamo.Delete(ctx, productID, categoryID)
 }

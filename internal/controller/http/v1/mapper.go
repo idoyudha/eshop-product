@@ -37,7 +37,6 @@ func updateProductRequestToProductEntity(request updateProductRequest, id string
 		Name:        request.Name,
 		Description: request.Description,
 		Price:       request.Price,
-		Quantity:    request.Quantity,
 		CategoryID:  request.CategoryID,
 		UpdatedAt:   time.Now(),
 	}
@@ -50,7 +49,6 @@ func productEntityToUpdateProductResponse(product entity.Product) updateProductR
 		ImageURL:    product.ImageURL,
 		Description: product.Description,
 		Price:       product.Price,
-		Quantity:    product.Quantity,
 		CategoryID:  product.CategoryID,
 	}
 }

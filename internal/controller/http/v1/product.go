@@ -4,7 +4,6 @@ import (
 	"errors"
 	"mime/multipart"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/idoyudha/eshop-product/internal/usecase"
@@ -52,7 +51,7 @@ type createProductResponse struct {
 
 func (r *productRoutes) createProduct(c *gin.Context) {
 	var request createProductRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
+	if err := c.ShouldBind(&request); err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - createProduct")
 		c.JSON(http.StatusBadRequest, newInternalServerError(err.Error()))
 		return
@@ -125,7 +124,6 @@ type updateProductRequest struct {
 	Image       *multipart.FileHeader `form:"image" binding:"required"`
 	Description string                `form:"description" binding:"required"`
 	Price       float64               `form:"price" binding:"required"`
-	Quantity    int                   `form:"quantity" binding:"required"`
 	CategoryID  string                `form:"category_id" binding:"required"`
 }
 
@@ -148,13 +146,12 @@ type updateProductResponse struct {
 	ImageURL    string  `json:"image_url"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
-	Quantity    int     `json:"quantity"`
 	CategoryID  string  `json:"category_id"`
 }
 
 func (r *productRoutes) updateProduct(c *gin.Context) {
 	var request updateProductRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
+	if err := c.ShouldBind(&request); err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
 		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
 		return
@@ -168,7 +165,7 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 
 	productEntity := updateProductRequestToProductEntity(request, c.Param("id"))
 
-	err := r.uc.UpdateProduct(c.Request.Context(), &productEntity)
+	err := r.uc.UpdateProduct(c.Request.Context(), &productEntity, request.Image)
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
@@ -181,13 +178,7 @@ func (r *productRoutes) updateProduct(c *gin.Context) {
 }
 
 func (r *productRoutes) deleteProduct(c *gin.Context) {
-	categoryID, err := strconv.Atoi(c.Param("category_id"))
-	if err != nil {
-		r.l.Error(err, "http - v1 - productRoutes - deleteProduct")
-		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
-		return
-	}
-	err = r.uc.DeleteProduct(c.Request.Context(), c.Param("product_id"), categoryID)
+	err := r.uc.DeleteProduct(c.Request.Context(), c.Param("product_id"), c.Param("category_id"))
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - deleteProduct")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))

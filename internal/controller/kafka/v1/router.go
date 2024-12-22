@@ -53,7 +53,6 @@ func KafkaNewRouter(
 				l.Error("Error reading message: ", err)
 				continue
 			}
-
 			switch *ev.TopicPartition.Topic {
 			case kafkaConSrv.ProductQtyUpdateTopic:
 				if err := routes.handleProductQuantityUpdated(ev); err != nil {
