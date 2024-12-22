@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -128,6 +129,19 @@ type updateProductRequest struct {
 	CategoryID  string                `form:"category_id" binding:"required"`
 }
 
+func (u *updateProductRequest) validate() error {
+	if u.Image.Size > 1024*1024 {
+		return errors.New("image size must be less than 1MB")
+	}
+
+	contentType := u.Image.Header.Get("Content-Type")
+	if contentType != "image/jpeg" && contentType != "image/png" {
+		return errors.New("image must be in JPEG or PNG format")
+	}
+
+	return nil
+}
+
 type updateProductResponse struct {
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
@@ -141,6 +155,12 @@ type updateProductResponse struct {
 func (r *productRoutes) updateProduct(c *gin.Context) {
 	var request updateProductRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
+		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
+		return
+	}
+
+	if err := request.validate(); err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
 		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
 		return
