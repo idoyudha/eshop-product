@@ -10,7 +10,10 @@ import (
 	"github.com/idoyudha/eshop-product/pkg/kafka"
 )
 
-const ProductUpdatedTopic = "product-updated"
+const (
+	productCreatedTopic = "product-created"
+	productUpdatedTopic = "product-updated"
+)
 
 type ProductUseCase struct {
 	productRepoImage  ProductS3Repo
@@ -28,6 +31,17 @@ func NewProductUseCase(
 		productRepoDynamo: productRepoDynamo,
 		producer:          producer,
 	}
+}
+
+type kafkaProductCreatedMessage struct {
+	ID          string  `json:"id"`
+	SKU         string  `json:"sku"`
+	Name        string  `json:"name"`
+	ImageURL    string  `json:"image_url"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	Quantity    int     `json:"quantity"`
+	CategoryID  string  `json:"category_id"`
 }
 
 func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Product, imageFile *multipart.FileHeader) (*entity.Product, error) {
@@ -48,6 +62,26 @@ func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Prod
 	err = u.productRepoDynamo.Save(ctx, product)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
+	}
+
+	message := kafkaProductCreatedMessage{
+		ID:          product.ID,
+		SKU:         product.SKU,
+		Name:        product.Name,
+		ImageURL:    product.ImageURL,
+		Description: product.Description,
+		Price:       product.Price,
+		Quantity:    product.Quantity,
+		CategoryID:  product.CategoryID,
+	}
+
+	err = u.producer.Produce(
+		productCreatedTopic,
+		[]byte(product.ID),
+		message,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send product data to kafka: %w", err)
 	}
 
 	// sent product data to main warehouse
@@ -85,7 +119,7 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 	}
 
 	err = u.producer.Produce(
-		ProductUpdatedTopic,
+		productUpdatedTopic,
 		[]byte(product.ID),
 		message,
 	)

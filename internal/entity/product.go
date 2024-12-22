@@ -15,7 +15,7 @@ type Product struct {
 	Description string
 	Price       float64
 	Quantity    int
-	CategoryID  int
+	CategoryID  string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   *time.Time
