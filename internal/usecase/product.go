@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"mime/multipart"
 
@@ -50,6 +49,8 @@ func (u *ProductUseCase) CreateProduct(ctx context.Context, product *entity.Prod
 	if err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
+
+	// sent product data to main warehouse
 	return product, nil
 }
 
@@ -83,16 +84,10 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 		ProductPrice: product.Price,
 	}
 
-	messageBytes, err := json.Marshal(message)
-	if err != nil {
-		// TODO: handle error, cancel the update if failed. or try use retry mechanism
-		return fmt.Errorf("failed to marshal kafka message: %w", err)
-	}
-
 	err = u.producer.Produce(
 		ProductUpdatedTopic,
 		[]byte(product.ID),
-		messageBytes,
+		message,
 	)
 	if err != nil {
 		// TODO: handle error, cancel the update if failed. or try use retry mechanism
