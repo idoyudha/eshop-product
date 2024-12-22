@@ -16,7 +16,7 @@ type (
 		Save(context.Context, *entity.Product) error
 		GetProducts(context.Context) (*[]entity.Product, error)
 		GetProductByID(context.Context, string) (*entity.Product, error)
-		GetProductsByCategory(context.Context, int) ([]entity.Product, error)
+		GetProductsByCategory(context.Context, string) ([]entity.Product, error)
 		Update(context.Context, *entity.Product) error
 		Delete(context.Context, string, int) error
 	}
@@ -41,7 +41,7 @@ type (
 		CreateProduct(context.Context, *entity.Product, *multipart.FileHeader) (*entity.Product, error)
 		GetProducts(context.Context) (*[]entity.Product, error)
 		GetProductByID(context.Context, string) (*entity.Product, error)
-		GetProductsByCategory(context.Context, int) ([]entity.Product, error)
+		GetProductsByCategory(context.Context, string) ([]entity.Product, error)
 		UpdateProduct(context.Context, *entity.Product) error
 		DeleteProduct(context.Context, string, int) error
 	}

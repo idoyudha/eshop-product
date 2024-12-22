@@ -35,7 +35,7 @@ func (r *ProductDynamoRepo) Save(ctx context.Context, product *entity.Product) e
 			"description": &types.AttributeValueMemberS{Value: product.Description},
 			"price":       &types.AttributeValueMemberN{Value: strconv.FormatFloat(product.Price, 'f', -1, 64)},
 			"quantity":    &types.AttributeValueMemberN{Value: strconv.Itoa(product.Quantity)},
-			"category_id": &types.AttributeValueMemberN{Value: strconv.Itoa(product.CategoryID)},
+			"category_id": &types.AttributeValueMemberS{Value: product.CategoryID},
 			"created_at":  &types.AttributeValueMemberS{Value: product.CreatedAt.String()},
 			"updated_at":  &types.AttributeValueMemberS{Value: product.UpdatedAt.String()},
 		},
@@ -73,10 +73,8 @@ func (r *ProductDynamoRepo) GetProducts(ctx context.Context) (*[]entity.Product,
 		}
 
 		product.Description = item["description"].(*types.AttributeValueMemberS).Value
+		product.CategoryID = item["category_id"].(*types.AttributeValueMemberS).Value
 
-		if categoryID, err := strconv.Atoi(item["category_id"].(*types.AttributeValueMemberN).Value); err == nil {
-			product.CategoryID = categoryID
-		}
 		if price, err := strconv.ParseFloat(item["price"].(*types.AttributeValueMemberN).Value, 64); err == nil {
 			product.Price = price
 		}
@@ -127,9 +125,8 @@ func (r *ProductDynamoRepo) GetProductByID(ctx context.Context, id string) (*ent
 		product.ImageURL = imgURL.(*types.AttributeValueMemberS).Value
 	}
 
-	if categoryID, err := strconv.Atoi(item["category_id"].(*types.AttributeValueMemberN).Value); err == nil {
-		product.CategoryID = categoryID
-	}
+	product.CategoryID = item["category_id"].(*types.AttributeValueMemberS).Value
+
 	if price, err := strconv.ParseFloat(item["price"].(*types.AttributeValueMemberN).Value, 64); err == nil {
 		product.Price = price
 	}
@@ -147,14 +144,14 @@ func (r *ProductDynamoRepo) GetProductByID(ctx context.Context, id string) (*ent
 	return product, nil
 }
 
-func (r *ProductDynamoRepo) GetProductsByCategory(ctx context.Context, categoryID int) ([]entity.Product, error) {
+func (r *ProductDynamoRepo) GetProductsByCategory(ctx context.Context, categoryID string) ([]entity.Product, error) {
 	input := &dynamodb.QueryInput{
 		TableName:              aws.String(r.ProductTable),
 		IndexName:              aws.String("category_id-index"),
 		KeyConditionExpression: aws.String("category_id = :category_id"),
 		FilterExpression:       aws.String("attribute_not_exists(deleted_at)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":category_id": &types.AttributeValueMemberN{Value: strconv.Itoa(categoryID)},
+			":category_id": &types.AttributeValueMemberS{Value: categoryID},
 		},
 	}
 
@@ -206,7 +203,7 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 		TableName: aws.String(r.ProductTable),
 		Key: map[string]types.AttributeValue{
 			"id":          &types.AttributeValueMemberS{Value: product.ID},
-			"category_id": &types.AttributeValueMemberN{Value: strconv.Itoa(product.CategoryID)},
+			"category_id": &types.AttributeValueMemberS{Value: product.CategoryID},
 		},
 		UpdateExpression: aws.String(
 			"SET #name = :name, " +

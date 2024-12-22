@@ -96,7 +96,7 @@ func (u *ProductUseCase) GetProductByID(ctx context.Context, id string) (*entity
 	return u.productRepoDynamo.GetProductByID(ctx, id)
 }
 
-func (u *ProductUseCase) GetProductsByCategory(ctx context.Context, categoryID int) ([]entity.Product, error) {
+func (u *ProductUseCase) GetProductsByCategory(ctx context.Context, categoryID string) ([]entity.Product, error) {
 	return u.productRepoDynamo.GetProductsByCategory(ctx, categoryID)
 }
 

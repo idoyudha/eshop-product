@@ -35,7 +35,7 @@ type createProductRequest struct {
 	Description string                `form:"description" binding:"required"`
 	Price       float64               `form:"price" binding:"required"`
 	Quantity    int                   `form:"quantity" binding:"required"`
-	CategoryID  int                   `form:"category_id" binding:"required"`
+	CategoryID  string                `form:"category_id" binding:"required"`
 }
 
 type createProductResponse struct {
@@ -46,7 +46,7 @@ type createProductResponse struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	Quantity    int     `json:"quantity"`
-	CategoryID  int     `json:"category_id"`
+	CategoryID  string  `json:"category_id"`
 }
 
 func (r *productRoutes) createProduct(c *gin.Context) {
@@ -77,7 +77,7 @@ type getProductResponse struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	Quantity    int     `json:"quantity"`
-	CategoryID  int     `json:"category_id"`
+	CategoryID  string  `json:"category_id"`
 }
 
 func (r *productRoutes) getProducts(c *gin.Context) {
@@ -107,14 +107,7 @@ func (r *productRoutes) getProductByID(c *gin.Context) {
 }
 
 func (r *productRoutes) getProductsByCategory(c *gin.Context) {
-	categoryID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
-		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
-		return
-	}
-
-	productEntities, err := r.uc.GetProductsByCategory(c.Request.Context(), categoryID)
+	productEntities, err := r.uc.GetProductsByCategory(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
@@ -132,7 +125,7 @@ type updateProductRequest struct {
 	Description string                `form:"description" binding:"required"`
 	Price       float64               `form:"price" binding:"required"`
 	Quantity    int                   `form:"quantity" binding:"required"`
-	CategoryID  int                   `form:"category_id" binding:"required"`
+	CategoryID  string                `form:"category_id" binding:"required"`
 }
 
 type updateProductResponse struct {
@@ -142,7 +135,7 @@ type updateProductResponse struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	Quantity    int     `json:"quantity"`
-	CategoryID  int     `json:"category_id"`
+	CategoryID  string  `json:"category_id"`
 }
 
 func (r *productRoutes) updateProduct(c *gin.Context) {
