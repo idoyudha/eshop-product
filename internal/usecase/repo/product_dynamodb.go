@@ -208,7 +208,6 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 	}
 	expAttrValues := map[string]types.AttributeValue{}
 
-	// Only include fields that should be updated
 	if product.Name != "" {
 		updateParts = append(updateParts, "#name = :name")
 		expAttrValues[":name"] = &types.AttributeValueMemberS{Value: product.Name}
@@ -225,10 +224,6 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 		updateParts = append(updateParts, "price = :price")
 		expAttrValues[":price"] = &types.AttributeValueMemberN{Value: strconv.FormatFloat(product.Price, 'f', 2, 64)}
 	}
-	if product.Quantity >= 0 {
-		updateParts = append(updateParts, "quantity = :quantity")
-		expAttrValues[":quantity"] = &types.AttributeValueMemberN{Value: strconv.Itoa(product.Quantity)}
-	}
 
 	updateParts = append(updateParts, "updated_at = :updated_at")
 	expAttrValues[":updated_at"] = &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339)}
@@ -244,15 +239,11 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 		UpdateExpression:          aws.String(updateExpression),
 		ExpressionAttributeNames:  expAttrNames,
 		ExpressionAttributeValues: expAttrValues,
-		ConditionExpression:       aws.String("attribute_not_exists(deleted_at)"),
+		ConditionExpression:       aws.String("attribute_exists(id)"),
 	}
 
 	_, err := r.Client.UpdateItem(ctx, input)
 	if err != nil {
-		var ccf *types.ConditionalCheckFailedException
-		if ok := errors.As(err, &ccf); ok {
-			return fmt.Errorf("product not found or has been deleted, id: %s", product.ID)
-		}
 		return fmt.Errorf("failed to update product: %w", err)
 	}
 
