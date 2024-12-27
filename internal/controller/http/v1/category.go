@@ -59,10 +59,15 @@ func (r *categoryRoutes) createCategory(c *gin.Context) {
 	c.JSON(http.StatusCreated, newCreateSuccess(categoryResponse))
 }
 
-type getCategoryResponse struct {
-	ID       string  `json:"id"`
-	Name     string  `json:"name"`
-	ParentID *string `json:"parent_id"`
+type getChildCategories struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type getParentCategoriesResponse struct {
+	ID     string               `json:"id"`
+	Name   string               `json:"name"`
+	Childs []getChildCategories `json:"childs"`
 }
 
 func (r *categoryRoutes) getCategories(c *gin.Context) {
@@ -73,7 +78,7 @@ func (r *categoryRoutes) getCategories(c *gin.Context) {
 		return
 	}
 
-	categoriesResponse := categoryEntitiesToGetCategoryResponse(*categories)
+	categoriesResponse := categoryEntityToGetAllCategoryResponse(*categories)
 
 	c.JSON(http.StatusOK, newGetSuccess(categoriesResponse))
 }

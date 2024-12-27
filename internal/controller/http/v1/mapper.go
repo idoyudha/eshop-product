@@ -100,16 +100,35 @@ func categoryEntityToCreateCategoryResponse(category entity.Category) createCate
 	}
 }
 
-func categoryEntitiesToGetCategoryResponse(categories []entity.Category) []getCategoryResponse {
-	var response []getCategoryResponse
+func categoryEntityToGetAllCategoryResponse(categories []entity.Category) []getParentCategoriesResponse {
+	var parentCategories []getParentCategoriesResponse
+
 	for _, c := range categories {
-		response = append(response, getCategoryResponse{
-			ID:       c.ID,
-			Name:     c.Name,
-			ParentID: c.ParentID,
-		})
+		if len(*c.ParentID) == 0 {
+			parentCategories = append(parentCategories, getParentCategoriesResponse{
+				ID:     c.ID,
+				Name:   c.Name,
+				Childs: []getChildCategories{},
+			})
+		}
 	}
-	return response
+
+	for _, c := range categories {
+		var childCategory getChildCategories
+		if len(*c.ParentID) > 0 {
+			childCategory = getChildCategories{
+				ID:   c.ID,
+				Name: c.Name,
+			}
+		}
+
+		for i := range parentCategories {
+			if parentCategories[i].ID == *c.ParentID {
+				parentCategories[i].Childs = append(parentCategories[i].Childs, childCategory)
+			}
+		}
+	}
+	return parentCategories
 }
 
 func categoryEntityToUpdateCategoryResponse(category entity.Category) updateCategoryResponse {
