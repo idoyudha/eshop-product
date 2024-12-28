@@ -24,6 +24,7 @@ func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product, l logger.Int
 		h.GET("/", r.getProducts)
 		h.GET("/:id", r.getProductByID)
 		h.GET("/category/:id", r.getProductsByCategory)
+		h.POST("/categories", r.getProductsByCategories)
 		h.PUT("/:id", r.updateProduct)
 		h.DELETE("/:product_id/category/:category_id", r.deleteProduct)
 	}
@@ -110,6 +111,30 @@ func (r *productRoutes) getProductsByCategory(c *gin.Context) {
 	productEntities, err := r.uc.GetProductsByCategory(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		r.l.Error(err, "http - v1 - productRoutes - getProductsByCategory")
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
+		return
+	}
+
+	products := productEntitiesToGetProductResponse(productEntities)
+
+	c.JSON(http.StatusOK, newGetSuccess(products))
+}
+
+type getProductsRequest struct {
+	CategoryIDs []string `json:"category_ids" binding:"required"`
+}
+
+func (r *productRoutes) getProductsByCategories(c *gin.Context) {
+	var request getProductsRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
+		c.JSON(http.StatusBadRequest, newBadRequestError(err.Error()))
+		return
+	}
+
+	productEntities, err := r.uc.GetProductsByCategories(c.Request.Context(), request.CategoryIDs)
+	if err != nil {
+		r.l.Error(err, "http - v1 - productRoutes - updateProduct")
 		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
 		return
 	}

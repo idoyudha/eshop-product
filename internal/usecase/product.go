@@ -100,6 +100,10 @@ func (u *ProductUseCase) GetProductsByCategory(ctx context.Context, categoryID s
 	return u.productRepoDynamo.GetProductsByCategory(ctx, categoryID)
 }
 
+func (u *ProductUseCase) GetProductsByCategories(ctx context.Context, categoryIDs []string) ([]entity.Product, error) {
+	return u.productRepoDynamo.GetProductsByCategories(ctx, categoryIDs)
+}
+
 type kafkaProductUpdatedMessage struct {
 	ProductID          uuid.UUID `json:"product_id"`
 	ProductName        string    `json:"product_name"`

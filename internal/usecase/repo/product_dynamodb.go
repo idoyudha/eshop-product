@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -199,7 +200,50 @@ func (r *ProductDynamoRepo) GetProductsByCategory(ctx context.Context, categoryI
 	return products, nil
 }
 
-// TODO: error get when this function not update the sku and created_at
+func (r *ProductDynamoRepo) GetProductsByCategories(ctx context.Context, categoryIDs []string) ([]entity.Product, error) {
+	var wg sync.WaitGroup
+	resultsChan := make(chan []entity.Product, len(categoryIDs))
+	errorsChan := make(chan error, len(categoryIDs))
+
+	for _, categoryID := range categoryIDs {
+		wg.Add(1)
+		go func(catID string) {
+			defer wg.Done()
+
+			products, err := r.GetProductsByCategory(ctx, catID)
+			if err != nil {
+				errorsChan <- fmt.Errorf("error fetching products for category %s: %w", catID, err)
+				return
+			}
+			resultsChan <- products
+		}(categoryID)
+	}
+
+	// wait for all goroutines to complete in a separate goroutine
+	go func() {
+		wg.Wait()
+		close(resultsChan)
+		close(errorsChan)
+	}()
+
+	var allProducts []entity.Product
+	for products := range resultsChan {
+		allProducts = append(allProducts, products...)
+	}
+
+	for err := range errorsChan {
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if len(allProducts) == 0 {
+		return []entity.Product{}, nil
+	}
+
+	return allProducts, nil
+}
+
 func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product) error {
 	// build dynamic update expression
 	var updateParts []string
