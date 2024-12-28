@@ -137,3 +137,14 @@ func categoryEntityToUpdateCategoryResponse(category entity.Category) updateCate
 		Name: category.Name,
 	}
 }
+
+func categoriesEntityToGetChildCategoryResponse(categories []entity.Category) []getChildCategories {
+	var response []getChildCategories
+	for _, c := range categories {
+		response = append(response, getChildCategories{
+			ID:   c.ID,
+			Name: c.Name,
+		})
+	}
+	return response
+}

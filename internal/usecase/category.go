@@ -34,7 +34,7 @@ func (u *CategoryUseCase) GetCategories(ctx context.Context) (*[]entity.Category
 	}
 
 	// if not found, get from dynamo
-	categories, err = u.categoryRepoDynamo.GetCategories(ctx)
+	categories, err = u.categoryRepoDynamo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +44,16 @@ func (u *CategoryUseCase) GetCategories(ctx context.Context) (*[]entity.Category
 	if err != nil {
 		return nil, err
 	}
+	return categories, nil
+}
+
+func (u *CategoryUseCase) GetCategoriesByParentID(ctx context.Context, id string) (*[]entity.Category, error) {
+	// get from redis first
+	categories, err := u.categoryRepoRedis.GetByParentID(ctx, id)
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
 	return categories, nil
 }
 

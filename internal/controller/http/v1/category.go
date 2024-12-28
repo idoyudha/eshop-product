@@ -21,6 +21,7 @@ func newCategoryRoutes(handler *gin.RouterGroup, uc usecase.Category, l logger.I
 	{
 		h.POST("/", r.createCategory)
 		h.GET("/", r.getCategories)
+		h.GET("/parent/:id", r.getCategoriesByParentID)
 		h.PUT("/:id", r.updateCategory)
 		h.DELETE("/:id", r.deleteCategory)
 	}
@@ -79,6 +80,19 @@ func (r *categoryRoutes) getCategories(c *gin.Context) {
 	}
 
 	categoriesResponse := categoryEntityToGetAllCategoryResponse(*categories)
+
+	c.JSON(http.StatusOK, newGetSuccess(categoriesResponse))
+}
+
+func (r *categoryRoutes) getCategoriesByParentID(c *gin.Context) {
+	categories, err := r.uc.GetCategoriesByParentID(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		r.l.Error(err, "http - v1 - categoryRoutes - getCategoryByParentID")
+		c.JSON(http.StatusInternalServerError, newInternalServerError(err.Error()))
+		return
+	}
+
+	categoriesResponse := categoriesEntityToGetChildCategoryResponse(*categories)
 
 	c.JSON(http.StatusOK, newGetSuccess(categoriesResponse))
 }

@@ -101,7 +101,7 @@ func (r *CategoryRedisRepo) GetAll(ctx context.Context) (*[]entity.Category, err
 	return &categories, nil
 }
 
-func (r *CategoryRedisRepo) GetByParentID(ctx context.Context, parentID string) ([]entity.Category, error) {
+func (r *CategoryRedisRepo) GetByParentID(ctx context.Context, parentID string) (*[]entity.Category, error) {
 	childIDs, err := r.Client.SMembers(ctx, categoryParentKey+parentID).Result()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get child IDs: %w", err)
@@ -135,7 +135,7 @@ func (r *CategoryRedisRepo) GetByParentID(ctx context.Context, parentID string) 
 		categories = append(categories, category)
 	}
 
-	return categories, nil
+	return &categories, nil
 }
 
 func (r *CategoryRedisRepo) Add(ctx context.Context, category *entity.Category) error {

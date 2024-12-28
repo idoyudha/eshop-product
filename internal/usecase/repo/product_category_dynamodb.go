@@ -42,7 +42,7 @@ func (r *CategoryDynamoRepo) Save(ctx context.Context, category *entity.Category
 	return nil
 }
 
-func (r *CategoryDynamoRepo) GetCategories(ctx context.Context) (*[]entity.Category, error) {
+func (r *CategoryDynamoRepo) GetAll(ctx context.Context) (*[]entity.Category, error) {
 	input := &dynamodb.ScanInput{
 		TableName:        aws.String(r.CategoryTable),
 		FilterExpression: aws.String("attribute_not_exists(deleted_at)"),
@@ -51,6 +51,44 @@ func (r *CategoryDynamoRepo) GetCategories(ctx context.Context) (*[]entity.Categ
 	result, err := r.Client.Scan(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan products: %w", err)
+	}
+
+	categories := make([]entity.Category, 0, len(result.Items))
+	for _, item := range result.Items {
+		category := entity.Category{}
+
+		category.ID = item["id"].(*types.AttributeValueMemberS).Value
+		category.Name = item["name"].(*types.AttributeValueMemberS).Value
+		category.ParentID = &item["parent_id"].(*types.AttributeValueMemberS).Value
+		if createdAt, err := time.Parse(time.RFC3339, item["created_at"].(*types.AttributeValueMemberS).Value); err == nil {
+			category.CreatedAt = createdAt
+		}
+		if updatedAt, err := time.Parse(time.RFC3339, item["updated_at"].(*types.AttributeValueMemberS).Value); err == nil {
+			category.UpdatedAt = updatedAt
+		}
+
+		categories = append(categories, category)
+	}
+
+	return &categories, nil
+}
+
+func (r *CategoryDynamoRepo) GetByParentID(ctx context.Context, parentID string) (*[]entity.Category, error) {
+	input := &dynamodb.ScanInput{
+		TableName:        aws.String(r.CategoryTable),
+		FilterExpression: aws.String("attribute_not_exists(deleted_at) AND parent_id = :parent_id"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":parent_id": &types.AttributeValueMemberS{Value: parentID},
+		},
+	}
+
+	result, err := r.Client.Scan(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan products: %w", err)
+	}
+
+	if len(result.Items) == 0 {
+		return nil, fmt.Errorf("category not found with parent_id: %s", parentID)
 	}
 
 	categories := make([]entity.Category, 0, len(result.Items))
