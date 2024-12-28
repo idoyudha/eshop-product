@@ -101,6 +101,28 @@ func (r *CategoryRedisRepo) GetAll(ctx context.Context) (*[]entity.Category, err
 	return &categories, nil
 }
 
+func (r *CategoryRedisRepo) GetByID(ctx context.Context, id string) (*entity.Category, error) {
+	data, err := r.Client.HGetAll(ctx, categoryKeyPrefix+id).Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get category data: %w", err)
+	}
+
+	if len(data) == 0 {
+		return nil, nil
+	}
+
+	category := &entity.Category{
+		ID:   id,
+		Name: data["name"],
+	}
+
+	if parentID, ok := data["parent_id"]; ok && parentID != "" {
+		category.ParentID = &parentID
+	}
+
+	return category, nil
+}
+
 func (r *CategoryRedisRepo) GetByParentID(ctx context.Context, parentID string) (*[]entity.Category, error) {
 	childIDs, err := r.Client.SMembers(ctx, categoryParentKey+parentID).Result()
 	if err != nil {

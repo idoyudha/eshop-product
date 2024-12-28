@@ -33,6 +33,7 @@ type (
 	CategoryRedisRepo interface {
 		SaveAll(context.Context, *[]entity.Category) error
 		GetAll(context.Context) (*[]entity.Category, error)
+		GetByID(context.Context, string) (*entity.Category, error)
 		GetByParentID(context.Context, string) (*[]entity.Category, error)
 		Add(context.Context, *entity.Category) error
 		Update(context.Context, string, string) error
@@ -52,6 +53,7 @@ type (
 	Category interface {
 		CreateCategory(context.Context, *entity.Category) (*entity.Category, error)
 		GetCategories(context.Context) (*[]entity.Category, error)
+		GetCategoryByID(context.Context, string) (*entity.Category, error)
 		GetCategoriesByParentID(context.Context, string) (*[]entity.Category, error)
 		UpdateCategory(context.Context, *entity.Category) error
 		DeleteCategory(context.Context, string) error
