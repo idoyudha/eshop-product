@@ -3,4 +3,7 @@ app:
   version: '1.0.0'
 
 http:
-  port: '8080'
+  port: '2001'
+
+log:
+  level: 'debug'

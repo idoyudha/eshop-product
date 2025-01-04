@@ -7,6 +7,10 @@ type (
 	Config struct {
 		App  `yaml:"app"`
 		HTTP `yaml:"http"`
+		Log  `yaml:"log"`
+		AWS
+		Redis
+		Kafka
 	}
 
 	// App -.
@@ -18,6 +22,30 @@ type (
 	// HTTP -.
 	HTTP struct {
 		Port string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+	}
+
+	AWS struct {
+		AwsRegion     string `env-required:"true" env:"AWS_REGION"`
+		AwsAccessKey  string `env-required:"true" env:"AWS_ACCESS_KEY"`
+		AwsSecretey   string `env-required:"true" env:"AWS_SECRET_KEY"`
+		ProductBucket string `env-required:"true" env:"AWS_PRODUCT_BUCKET"`
+		CdnDomain     string `env-required:"true" env:"AWS_CDN_DOMAIN"`
+	}
+
+	// Redis
+	Redis struct {
+		RedisURL      string `env-required:"true" env:"REDIS_URL"`
+		RedisPassword string `env-required:"true" env:"REDIS_PASSWORD"`
+	}
+
+	// Log
+	Log struct {
+		Level string `yaml:"log_level"`
+	}
+
+	// Kafka
+	Kafka struct {
+		Broker string `env-required:"true" env:"KAFKA_BROKER"`
 	}
 )
 
