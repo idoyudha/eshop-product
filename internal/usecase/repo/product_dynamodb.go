@@ -260,6 +260,10 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 		updateParts = append(updateParts, "image_url = :image_url")
 		expAttrValues[":image_url"] = &types.AttributeValueMemberS{Value: product.ImageURL}
 	}
+	if product.Quantity > 0 {
+		updateParts = append(updateParts, "quantity = :quantity")
+		expAttrValues[":quantity"] = &types.AttributeValueMemberN{Value: strconv.Itoa(product.Quantity)}
+	}
 	if product.Description != "" {
 		updateParts = append(updateParts, "description = :description")
 		expAttrValues[":description"] = &types.AttributeValueMemberS{Value: product.Description}

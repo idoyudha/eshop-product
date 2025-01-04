@@ -147,6 +147,10 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 	return nil
 }
 
+func (u *ProductUseCase) UpdateProductQuantity(ctx context.Context, product *entity.Product) error {
+	return u.productRepoDynamo.Update(ctx, product)
+}
+
 func (u *ProductUseCase) DeleteProduct(ctx context.Context, productID string, categoryID string) error {
 	return u.productRepoDynamo.Delete(ctx, productID, categoryID)
 }
