@@ -298,6 +298,52 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 	return nil
 }
 
+func (r *ProductDynamoRepo) GetCategoryByProductId(ctx context.Context, productID string) (*string, error) {
+	queryInput := &dynamodb.QueryInput{
+		TableName:              aws.String(r.ProductTable),
+		KeyConditionExpression: aws.String("id = :id"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":id": &types.AttributeValueMemberS{Value: productID},
+		},
+		Limit: aws.Int32(1),
+	}
+
+	result, err := r.Client.Query(ctx, queryInput)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query product: %w", err)
+	}
+
+	if len(result.Items) == 0 {
+		return nil, fmt.Errorf("product not found with ID: %s", productID)
+	}
+
+	item := result.Items[0]
+	categoryID := item["category_id"].(*types.AttributeValueMemberS).Value
+	return &categoryID, nil
+}
+
+func (r *ProductDynamoRepo) UpdateProductQty(ctx context.Context, productID, categoryID string, quantity int) error {
+	input := &dynamodb.UpdateItemInput{
+		TableName: aws.String(r.ProductTable),
+		Key: map[string]types.AttributeValue{
+			"id":          &types.AttributeValueMemberS{Value: productID},
+			"category_id": &types.AttributeValueMemberS{Value: categoryID},
+		},
+		UpdateExpression: aws.String("SET quantity = :quantity"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":quantity": &types.AttributeValueMemberN{Value: strconv.Itoa(quantity)},
+		},
+		ConditionExpression: aws.String("attribute_exists(id)"),
+	}
+
+	_, err := r.Client.UpdateItem(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update product quantity: %w", err)
+	}
+
+	return nil
+}
+
 func (r *ProductDynamoRepo) Delete(ctx context.Context, productID string, categoryID string) error {
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String(r.ProductTable),

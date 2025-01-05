@@ -147,8 +147,12 @@ func (u *ProductUseCase) UpdateProduct(ctx context.Context, product *entity.Prod
 	return nil
 }
 
-func (u *ProductUseCase) UpdateProductQuantity(ctx context.Context, product *entity.Product) error {
-	return u.productRepoDynamo.Update(ctx, product)
+func (u *ProductUseCase) UpdateProductQuantity(ctx context.Context, productID string, quantity int) error {
+	categoryID, err := u.productRepoDynamo.GetCategoryByProductId(ctx, productID)
+	if err != nil {
+		return fmt.Errorf("failed to update product quantity: %w", err)
+	}
+	return u.productRepoDynamo.UpdateProductQty(ctx, productID, *categoryID, quantity)
 }
 
 func (u *ProductUseCase) DeleteProduct(ctx context.Context, productID string, categoryID string) error {
