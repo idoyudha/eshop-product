@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/google/uuid"
+	"github.com/idoyudha/eshop-product/internal/entity"
 	"github.com/idoyudha/eshop-product/internal/usecase"
 	kafkaConSrv "github.com/idoyudha/eshop-product/pkg/kafka"
 	"github.com/idoyudha/eshop-product/pkg/logger"
@@ -71,19 +73,28 @@ func KafkaNewRouter(
 	return nil
 }
 
-type KafkaProductQuantityUpdatedMessage struct {
-	ProductID       uuid.UUID `json:"product_id"`
-	ProductQuantity int64     `json:"product_quantity"`
+type kafkaProductQuantityUpdatedMessage struct {
+	ProductID uuid.UUID `json:"product_id"`
+	Quantity  int       `json:"quantity"`
 }
 
 func (r *kafkaConsumerRoutes) handleProductQuantityUpdated(msg *kafka.Message) error {
-	var message KafkaProductQuantityUpdatedMessage
-
+	var message kafkaProductQuantityUpdatedMessage
 	if err := json.Unmarshal(msg.Value, &message); err != nil {
 		return err
 	}
 
-	log.Println("Received product quantity updated", message)
-	// TODO: update product quantity in dynamo db
+	product := &entity.Product{
+		ID:       message.ProductID.String(),
+		Quantity: message.Quantity,
+	}
+
+	if err := r.ucp.UpdateProduct(context.Background(), product, nil); err != nil {
+		r.l.Error(err, "http - v1 - kafkaConsumerRoutes - handleProductQuantityUpdated")
+		return err
+	}
+
+	r.l.Info("Product quantity updated", "http - v1 - kafkaConsumerRoutes - handleProductQuantityUpdated")
+
 	return nil
 }

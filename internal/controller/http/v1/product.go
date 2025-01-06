@@ -20,8 +20,8 @@ func newProductRoutes(handler *gin.RouterGroup, uc usecase.Product, l logger.Int
 
 	h := handler.Group("/products")
 	{
-		h.POST("/", r.createProduct)
-		h.GET("/", r.getProducts)
+		h.POST("", r.createProduct)
+		h.GET("", r.getProducts)
 		h.GET("/:id", r.getProductByID)
 		h.GET("/category/:id", r.getProductsByCategory)
 		h.POST("/categories", r.getProductsByCategories)
