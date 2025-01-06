@@ -19,6 +19,8 @@ type (
 		GetProductsByCategory(context.Context, string) ([]entity.Product, error)
 		GetProductsByCategories(context.Context, []string) ([]entity.Product, error)
 		Update(context.Context, *entity.Product) error
+		GetCategoryByProductId(context.Context, string) (*string, error)
+		UpdateProductQty(context.Context, string, string, int) error
 		Delete(context.Context, string, string) error
 	}
 
@@ -47,6 +49,7 @@ type (
 		GetProductsByCategory(context.Context, string) ([]entity.Product, error)
 		GetProductsByCategories(context.Context, []string) ([]entity.Product, error)
 		UpdateProduct(context.Context, *entity.Product, *multipart.FileHeader) error
+		UpdateProductQuantity(context.Context, string, int) error
 		DeleteProduct(context.Context, string, string) error
 	}
 

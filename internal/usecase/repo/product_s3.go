@@ -23,6 +23,10 @@ func NewProductS3Repo(s *awsService.S3Service) *ProductS3Repo {
 }
 
 func (r *ProductS3Repo) UploadImage(ctx context.Context, file *multipart.FileHeader) (string, error) {
+	if file == nil {
+		return "", fmt.Errorf("file is required")
+	}
+
 	src, err := file.Open()
 	if err != nil {
 		return "", fmt.Errorf("failed to open file: %w", err)

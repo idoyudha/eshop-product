@@ -89,7 +89,7 @@ func (r *kafkaConsumerRoutes) handleProductQuantityUpdated(msg *kafka.Message) e
 		Quantity: message.Quantity,
 	}
 
-	if err := r.ucp.UpdateProduct(context.Background(), product, nil); err != nil {
+	if err := r.ucp.UpdateProductQuantity(context.Background(), product.ID, product.Quantity); err != nil {
 		r.l.Error(err, "http - v1 - kafkaConsumerRoutes - handleProductQuantityUpdated")
 		return err
 	}
