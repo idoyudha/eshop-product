@@ -8,31 +8,27 @@ This service handles product operations like create, read, update, and delete. U
 ```
 eshop-auth
 ├── .github/
-│   └── workflows/
+│   └── workflows/      # github workflows to automatically test, build, and push
 ├── cmd/
-│   └── app/
-├── config/
+│   └── app/            # configuration and log initialization
+├── config/             # configuration
 ├── internal/   
-│   ├── app/
-│   ├── constant/
-│   ├── controller/
+│   ├── app/            # one run function in the `app.go`
+│   ├── constant/       # global constant
 │   │   ├── http/
-│   │   |   └── v1/
+│   │   |   └── v1/     # rest http
 │   │   └── kafka
-│   │       └── v1/
-│   ├── dto/
-│   ├── entity/
-│   ├── usecase/
-│   │   └── repo/
-│   ├── usecase/
-│   └── utils/
-├── migrations/
+│   │       └── v1/     # kafka consumer
+│   ├── entity/         # entities of business logic (models) can be used in any layer
+│   ├── usecase/        # business logic
+│   │   └── repo/       # abstract storage (database) that business logic works with
+│   └── utils/          # helpers function
 └── pkg/
-    ├── aws/
-    ├── httpserver/
-    ├── kafka/
-    ├── logger/
-    └── redis/
+    ├── aws/            # aws initialization for client, dynamodb, and s3
+    ├── httpserver/     # http server initialization
+    ├── kafka/          # kafka initialization
+    ├── logger/         # logger initialization
+    └── redis/          # redis initialization
 ```
 
 ## Tech Stack
