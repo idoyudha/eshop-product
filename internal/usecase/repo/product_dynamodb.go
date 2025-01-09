@@ -245,10 +245,15 @@ func (r *ProductDynamoRepo) GetProductsByCategories(ctx context.Context, categor
 }
 
 func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product) error {
-	// build dynamic update expression
 	var updateParts []string
 	expAttrNames := map[string]string{
-		"#name": "name",
+		"#id":          "id",
+		"#name":        "name",
+		"#category_id": "category_id",
+		"#image_url":   "image_url",
+		"#description": "description",
+		"#price":       "price",
+		"#updated_at":  "updated_at",
 	}
 	expAttrValues := map[string]types.AttributeValue{}
 
@@ -257,23 +262,19 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 		expAttrValues[":name"] = &types.AttributeValueMemberS{Value: product.Name}
 	}
 	if product.ImageURL != "" {
-		updateParts = append(updateParts, "image_url = :image_url")
+		updateParts = append(updateParts, "#image_url = :image_url")
 		expAttrValues[":image_url"] = &types.AttributeValueMemberS{Value: product.ImageURL}
 	}
-	if product.Quantity > 0 {
-		updateParts = append(updateParts, "quantity = :quantity")
-		expAttrValues[":quantity"] = &types.AttributeValueMemberN{Value: strconv.Itoa(product.Quantity)}
-	}
 	if product.Description != "" {
-		updateParts = append(updateParts, "description = :description")
+		updateParts = append(updateParts, "#description = :description")
 		expAttrValues[":description"] = &types.AttributeValueMemberS{Value: product.Description}
 	}
 	if product.Price > 0 {
-		updateParts = append(updateParts, "price = :price")
+		updateParts = append(updateParts, "#price = :price")
 		expAttrValues[":price"] = &types.AttributeValueMemberN{Value: strconv.FormatFloat(product.Price, 'f', 2, 64)}
 	}
 
-	updateParts = append(updateParts, "updated_at = :updated_at")
+	updateParts = append(updateParts, "#updated_at = :updated_at")
 	expAttrValues[":updated_at"] = &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339)}
 
 	updateExpression := "SET " + strings.Join(updateParts, ", ")
@@ -287,10 +288,30 @@ func (r *ProductDynamoRepo) Update(ctx context.Context, product *entity.Product)
 		UpdateExpression:          aws.String(updateExpression),
 		ExpressionAttributeNames:  expAttrNames,
 		ExpressionAttributeValues: expAttrValues,
-		ConditionExpression:       aws.String("attribute_exists(id)"),
+		ConditionExpression:       aws.String("attribute_exists(#id) AND attribute_exists(#category_id)"),
 	}
 
-	_, err := r.Client.UpdateItem(ctx, input)
+	// First, let's verify if the item exists
+	getInput := &dynamodb.GetItemInput{
+		TableName: aws.String(r.ProductTable),
+		Key: map[string]types.AttributeValue{
+			"id":          &types.AttributeValueMemberS{Value: product.ID},
+			"category_id": &types.AttributeValueMemberS{Value: product.CategoryID},
+		},
+	}
+
+	// Check if item exists before updating
+	result, err := r.Client.GetItem(ctx, getInput)
+	if err != nil {
+		return fmt.Errorf("failed to check if product exists: %w", err)
+	}
+
+	if result.Item == nil {
+		return fmt.Errorf("product with ID %s and category ID %s not found", product.ID, product.CategoryID)
+	}
+
+	// If item exists, proceed with update
+	_, err = r.Client.UpdateItem(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to update product: %w", err)
 	}
