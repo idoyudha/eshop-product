@@ -21,13 +21,13 @@ import (
 func Run(cfg *config.Config) {
 	l := logger.New(cfg.Log.Level)
 
-	kafkaProducer, err := kafka.NewKafkaProducer(cfg.Kafka.Broker)
+	kafkaProducer, err := kafka.NewKafkaProducer(cfg.Kafka)
 	if err != nil {
 		l.Fatal("app - Run - kafka.NewKafkaProducer: ", err)
 	}
 	defer kafkaProducer.Close()
 
-	kafkaConsumer, err := kafka.NewKafkaConsumer(cfg.Kafka.Broker)
+	kafkaConsumer, err := kafka.NewKafkaConsumer(cfg.Kafka)
 	if err != nil {
 		l.Fatal("app - Run - kafka.NewKafkaConsumer: ", err)
 	}
