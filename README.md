@@ -17,8 +17,7 @@ eshop-auth
 │   ├── constant/       # global constant
 │   │   ├── http/
 │   │   |   └── v1/     # rest http
-│   │   └── kafka
-│   │       └── v1/     # kafka consumer
+│   │   └── kafka       # kafka consumers
 │   ├── entity/         # entities of business logic (models) can be used in any layer
 │   ├── usecase/        # business logic
 │   │   └── repo/       # abstract storage (database) that business logic works with
