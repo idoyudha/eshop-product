@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/idoyudha/eshop-product/config"
 	v1Http "github.com/idoyudha/eshop-product/internal/controller/http/v1"
-	v1Kafka "github.com/idoyudha/eshop-product/internal/controller/kafka/v1"
+	kafkaEvent "github.com/idoyudha/eshop-product/internal/controller/kafka"
 	"github.com/idoyudha/eshop-product/internal/usecase"
 	"github.com/idoyudha/eshop-product/internal/usecase/repo"
 	"github.com/idoyudha/eshop-product/pkg/aws"
@@ -67,7 +67,7 @@ func Run(cfg *config.Config) {
 	// Kafka Consumer
 	kafkaErrChan := make(chan error, 1)
 	go func() {
-		if err := v1Kafka.KafkaNewRouter(productUseCase, l, kafkaConsumer); err != nil {
+		if err := kafkaEvent.KafkaNewRouter(productUseCase, l, kafkaConsumer); err != nil {
 			kafkaErrChan <- err
 		}
 	}()
